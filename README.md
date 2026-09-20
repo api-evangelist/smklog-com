@@ -64,5 +64,10 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-SMKlog is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry) and added to the network as a stub for full-pipeline profiling.
-- https://smklog.com/
+SMKlog (SMKLOG-2022 LLC, Berkeley Heights, New Jersey) is an independent US parcel shipping calculator and label seller. Its pricing engine is published for machines as the SMKlog Quote API on quote-api.smklog.com: an OpenAPI 3.1 contract (no key required), a remote MCP server with five tools plus an open-source stdio bridge, an A2A agent card, an RFC 9727 api-catalog, RFC 8414/9728 OAuth metadata for an optional client_credentials rate-limit tier, two provider-published Agent Skills and an llms.txt. Agents price and prepare checkout; a human always completes payment on smklog.com.
+
+- Website: https://smklog.com/
+- API docs: https://smklog.com/api
+- OpenAPI: https://quote-api.smklog.com/openapi.json
+- MCP: https://quote-api.smklog.com/mcp
+- Agent card: https://smklog.com/.well-known/agent-card.json

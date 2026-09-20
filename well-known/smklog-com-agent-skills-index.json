@@ -1,0 +1,19 @@
+{
+ "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+ "skills": [
+  {
+   "name": "get-parcel-quote",
+   "type": "skill-md",
+   "description": "Get live purchasable parcel shipping rates from a plain-words item description via the SMKlog quote API. Origin is a US address; destinations are the US, Canada, the UK, Germany and Australia.",
+   "url": "/.well-known/agent-skills/get-parcel-quote/SKILL.md",
+   "digest": "sha256:fe197df6cb8f6db8631338f7b1373a3126f72d71ee59494215db9d7e7bc5dc8e"
+  },
+  {
+   "name": "create-checkout-link",
+   "type": "skill-md",
+   "description": "Prepare a Stripe payment session for a chosen parcel rate; a human completes payment behind SMKlog consent gates.",
+   "url": "/.well-known/agent-skills/create-checkout-link/SKILL.md",
+   "digest": "sha256:0a45537dc828772f9e705af6066f766284f5aac39b999c6e7f68ec651b433722"
+  }
+ ]
+}

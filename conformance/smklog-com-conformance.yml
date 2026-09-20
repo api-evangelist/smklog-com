@@ -1,0 +1,103 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  openapi/smklog-com-openapi.yml (verbatim provider spec), the well-known documents saved in well-known/, the live
+  MCP initialize/tools/list responses, the A2A agent card, auth.md, api.md and the provider's llms.txt — all
+  fetched 2026-09-19.
+standards:
+- id: oauth2
+  conforms: true
+  evidence: >-
+    RFC 8414 authorization-server metadata served at /.well-known/oauth-authorization-server on both smklog.com and
+    quote-api.smklog.com (issuer https://quote-api.smklog.com, grant client_credentials, token_endpoint
+    /oauth/token, scope quote); the token endpoint answers 401 invalid_client without credentials. Optional —
+    the API is open without it.
+- id: rfc8414-authorization-server-metadata
+  conforms: true
+  evidence: well-known/smklog-com-quote-api-oauth-authorization-server.json (issuer, token_endpoint, grant_types_supported, token_endpoint_auth_methods_supported, scopes_supported, response_types_supported, service_documentation).
+- id: rfc9728-protected-resource-metadata
+  conforms: true
+  evidence: >-
+    /.well-known/oauth-protected-resource on both hosts (resource, authorization_servers, scopes_supported,
+    bearer_methods_supported, resource_documentation), served on the MCP/resource host as the RFC places it, with
+    a non-standard authorization_required false.
+- id: rfc9727-api-catalog
+  conforms: true
+  evidence: >-
+    /.well-known/api-catalog answers application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"
+    with a linkset carrying service-desc (openapi.json, application/openapi+json), service-doc and status
+    relations — well-known/smklog-com-api-catalog.json.
+- id: rfc9116-security-txt
+  conforms: true
+  evidence: /.well-known/security.txt with Contact, Expires (2027-07-29), Preferred-Languages and Canonical — well-known/smklog-com-security.txt.
+- id: mcp
+  conforms: true
+  evidence: >-
+    POST /mcp answered initialize (protocolVersion 2025-06-18, tools/resources/prompts capabilities, the
+    io.modelcontextprotocol/tasks extension), tools/list with 5 tools carrying inputSchema and annotations,
+    resources/list and prompts/list; a server card is served at /.well-known/mcp/server-card.json and the server is
+    listed in the official MCP registry as com.smklog/parcel-shipping-rates.
+- id: a2a
+  conforms: true
+  scope: flavored
+  evidence: >-
+    /.well-known/agent-card.json parses as an AgentCard (capabilities object, skills array, supportedInterfaces
+    JSONRPC 0.3.0) and POST /a2a speaks JSON-RPC 2.0 (observed -32001 on tasks/get: "this agent answers stateless
+    messages and creates no tasks"); graded flavored (no top-level protocolVersion) in a2a/smklog-com-a2a.yml.
+- id: agent-skills-discovery
+  conforms: true
+  evidence: >-
+    /.well-known/agent-skills/index.json declares $schema https://schemas.agentskills.io/discovery/0.2.0/schema.json
+    with two skill-md entries and sha256 digests; both SKILL.md files served (skills/).
+- id: json-rpc-2.0
+  conforms: true
+  evidence: Both /mcp and /a2a answer JSON-RPC 2.0 envelopes; GET on either returns a 405 telling the caller to POST JSON-RPC 2.0.
+- id: llms-txt
+  conforms: true
+  evidence: /llms.txt served (8,213 bytes) in llmstxt.org shape — H1, blockquote summary, sectioned link lists; a markdown twin of the API docs is served at /api.md.
+- id: content-signal-robots
+  conforms: true
+  evidence: 'robots.txt on both hosts carries a Content-Signal line (search/ai-input/ai-train/use) — smklog.com: search=yes, ai-input=yes, ai-train=yes; quote-api: search=no, ai-input=yes, ai-train=yes.'
+- id: mpp-session-intent
+  conforms: null
+  claimed: true
+  evidence: >-
+    createPaymentSession is titled 'Create a payment session for one parcel label (MPP intent "session")' in the
+    spec and api.md; no MPP discovery document or protocol handshake is published to verify the claim against, so it
+    is recorded as stated.
+- id: webmcp
+  conforms: null
+  claimed: true
+  evidence: >-
+    api.md: "In browsers with WebMCP support the same tools register on this site's pages via navigator.modelContext";
+    the homepage HTML fetched 2026-09-19 contains no modelContext reference, so the claim is not observed here.
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration 404 on smklog.com, 405 on quote-api.smklog.com; the OAuth metadata has no authorization_endpoint and response_types_supported is empty.
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: 'errors are application/json with a flat {"error": "<snake_code>", "message"?, "missing"?} envelope, not application/problem+json.'
+- id: idempotency-key
+  conforms: false
+  evidence: No Idempotency-Key header or replay contract anywhere in the spec or docs; the MCP annotations mark get_parcel_quote and create_checkout_link idempotentHint false and the tool text says calling create_checkout_link twice makes two sessions.
+- id: rfc8594-sunset
+  conforms: false
+  evidence: No Deprecation or Sunset headers declared; no deprecation policy published.
+- id: pagination
+  conforms: false
+  evidence: No list operations exist (rates come back as a bounded array of at most five; scan events at most eight).
+- id: asyncapi
+  conforms: false
+  evidence: No event surface — agent card capabilities.pushNotifications false, MCP listChanged false everywhere, no webhooks documented, no /asyncapi.yaml.
+- id: openapi-3.1
+  conforms: true
+  evidence: 'openapi: 3.1.0, 4 operations, inline schemas, x-mcp extension; served as application/openapi+json on the API host and on the apex.'
+domain_standard: none
+domain_standard_note: >-
+  Parcel rating has no cross-vendor interchange standard the contract could declare — the spec carries no EDI
+  (X12 204/214/210), UN/EDIFACT IFTMIN, GS1 EPCIS/SSCC, or IATA shape, and the carrier rate schemas are SMKlog's
+  own flat JSON. The terms reference US Foreign Trade Regulations (15 CFR Part 30) and AES/EEI filing for exports
+  at $2,500+, but as customer obligations, not as an API surface. Reward-only dimension; nothing asserted.
+notes:
+- No published compliance programme (SOC 2, ISO 27001, PCI DSS) was found — payment is on Stripe hosted checkout and the site says so — so no Compliance pointer is emitted.
+- No gRPC/Protobuf, WSDL/SOAP, GraphQL or OGC surface exists; probed /graphql on smklog.com (403 HTML challenge — a Cloudflare block on an unused path, not a gated GraphQL endpoint; nothing in the docs names GraphQL).

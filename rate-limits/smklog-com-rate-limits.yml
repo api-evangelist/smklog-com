@@ -1,0 +1,58 @@
+generated: '2026-09-19'
+method: searched
+source: https://quote-api.smklog.com/openapi.json
+sources:
+- https://quote-api.smklog.com/openapi.json (info.description, 429 responses)
+- https://quote-api.smklog.com/mcp (tools/list — get_parcel_quote and get_checkout_status "Allowance" lines)
+- https://smklog.com/api ("Rate limits are real")
+- https://smklog.com/auth.md
+provider: SMKlog
+providerId: smklog-com
+limit_count: 2
+description: >-
+  Two published per-client hourly buckets, both stated in the provider's own contract text: about 80 quote calls an
+  hour shared between POST /quote, the MCP get_parcel_quote tool, the A2A skill and (when it prices live)
+  createPaymentSession / create_checkout_link; and 60 checkout-status reads an hour. track_parcel and
+  get_price_index spend no quote allowance. Exhaustion answers HTTP 429 rate_limited. No rate-limit response
+  headers are documented, and none were observed on the live 400/404 responses. Manually issued OAuth
+  client_credentials move an agent to "its own hourly bucket at its own size" (auth.md) — the size is not published.
+limits:
+- id: quote-bucket
+  scope: per-client
+  window: 1 hour
+  limit: 80
+  limit_note: '"about 80 quote requests per hour" (OpenAPI info.description); "Allowance: 80 calls an hour per client, shared with the public /quote route" (get_parcel_quote tool)'
+  applies_to: [getParcelQuote, 'MCP get_parcel_quote', 'A2A get_parcel_quote', 'createPaymentSession / create_checkout_link when no valid quote_id is supplied']
+  burst: not published
+  exhaustion_status: 429
+  exhaustion_code: rate_limited
+  docs: https://smklog.com/api
+- id: checkout-status-bucket
+  scope: per-client
+  window: 1 hour
+  limit: 60
+  limit_note: '"429 rate_limited — 60 checks an hour per client" (OpenAPI getCheckoutStatus); "Allowance: 60 checks an hour per client" (get_checkout_status tool)'
+  applies_to: [getCheckoutStatus, 'MCP get_checkout_status']
+  burst: not published
+  exhaustion_status: 429
+  exhaustion_code: rate_limited
+  docs: https://quote-api.smklog.com/openapi.json
+exempt:
+- {surface: 'MCP track_parcel', note: '"neither quotes nor spends quote allowance"'}
+- {surface: 'MCP get_price_index', note: '"reading it spends no quote allowance"'}
+- {surface: 'GET /status', note: liveness probe; cache-control public max-age=3600 observed}
+headers:
+  rate_limit: null            # no X-RateLimit-* / RateLimit-* documented or observed
+  retry_after: null           # not documented or observed
+  observed_on_error: 'POST /quote 400 -> cache-control no-store, access-control-allow-origin https://smklog.com; no rate-limit family (2026-09-19)'
+responseCodes:
+  throttled: 429
+higher_tier:
+  mechanism: OAuth 2.0 client_credentials bearer (scope quote) on POST /quote
+  registration: manual, mailto:info@smklog.com
+  size: not published
+  detail: authentication/smklog-com-authentication.yml
+guidance:
+- '"Hourly, per client, and shared between /quote and /mcp, so switching protocol does not add capacity. Every quote hits live carrier rating and costs us money: one call per shipment, cache on your side, never poll." — smklog.com/api'
+- 'Reuse quote_id (15 minutes) in create_checkout_link "so the pair costs one carrier call rather than two".'
+- 'Poll get_checkout_status "minutes apart rather than seconds".'

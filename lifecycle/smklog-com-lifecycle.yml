@@ -1,0 +1,39 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  openapi/smklog-com-openapi.yml (info.version), https://quote-api.smklog.com/ and /status (version), the agent
+  card and MCP serverInfo (all 1.4.0), the MCP registry version history, auth.md, the MCP tool descriptions and the
+  provider docs, fetched 2026-09-19. No versioning policy, deprecation policy, SLA or status page is published.
+versioning:
+  scheme: unversioned paths; a single semver product version shared by the OpenAPI, agent card, MCP server, server card and registry listing
+  current: 1.4.0
+  product_version: 1.4.0
+  bridge_version: 1.4.1 (github.com/smklog/parcel-shipping-rates-mcp package.json)
+  note: >-
+    No /v1/ prefix and no version header. The MCP server card advertises protocolVersions 2026-07-28, 2025-06-18
+    and 2025-03-26 and the stdio bridge sends the negotiated version on the legacy path, so two MCP protocol eras are
+    supported at once. Registry history runs 1.0.1 (2026-08-25) -> 1.4.0 (2026-09-01); see changelog/.
+deprecation:
+  policy_url: null
+  sunset_header: false
+  note: No deprecation policy, Deprecation/Sunset headers or deprecated operations exist.
+sla:
+  url: null
+  note: >-
+    No SLA is published. The terms state "No Performance Guarantee" for the shipping service; the API docs say a
+    quote "is a snapshot, not a contract".
+status_page: null
+health_endpoint:
+  url: https://quote-api.smklog.com/status
+  observed: '200 {"ok":true,"service":"smklog-quote-api","version":"1.4.0","time":"2026-09-20T03:27:30.519Z","last_estimate_race":null} on 2026-09-19'
+  note: >-
+    A liveness probe (operationId status), linked from the RFC 9727 api-catalog as the "status" relation and from the
+    root discovery document; it carries no incident history or component status, so no StatusPage pointer is emitted.
+data_lifecycle:
+  quote_id: valid 15 minutes (createPaymentSession.requestBody.quote_id)
+  payment_session: lives 30 days from creation; an unknown or expired id answers 404 session_not_found
+  oauth_token: opaque bearer valid one hour (auth.md)
+  price_index: one issue per month from 2026-07 onward; the newest is returned when month is omitted
+  carrier_adjustments: 'terms: carrier corrections "typically surface within 30 days of carrier acceptance"'
+  security_txt: expires 2027-07-29
+deprecated_operations: []

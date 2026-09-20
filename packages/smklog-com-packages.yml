@@ -1,0 +1,55 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  GitHub org github.com/smklog, the MCP registry entry com.smklog/parcel-shipping-rates, registry.npmjs.org,
+  pypi.org and the provider docs (smklog.com/api, llms.txt), checked 2026-09-19.
+package_count: 1
+official_package_count: 1
+sdk_count: 0
+description: >-
+  SMKlog publishes no client library that wraps the Quote API. Its one first-party package is an MIT-licensed
+  stdio bridge for the hosted MCP server — a thin Node process that forwards JSON-RPC to
+  https://quote-api.smklog.com/mcp — installed straight from GitHub with npx; it is NOT on the npm registry (the
+  scoped name in package.json returns 404 there), so version currency is read from the repository's package.json.
+  The npm package samarkand-smklog and the PyPI project smklog belong to an unrelated "Samarkand" logger and are
+  not SMKlog's. No SDKs pointer is emitted: an MCP transport bridge is not an API client library.
+packages:
+- language: javascript
+  registry: github
+  kind: mcp-stdio-bridge
+  name: '@smklog/parcel-shipping-rates-mcp'
+  url: https://github.com/smklog/parcel-shipping-rates-mcp
+  install: npx -y github:smklog/parcel-shipping-rates-mcp
+  docker: docker build -t smklog-parcel-shipping-rates-mcp https://github.com/smklog/parcel-shipping-rates-mcp.git
+  bin: smklog-parcel-shipping-rates-mcp
+  official: true
+  license: MIT
+  author: SMKLOG-2022 LLC (https://smklog.com)
+  version: 1.4.1
+  version_source: package.json on the main branch (raw.githubusercontent.com), read 2026-09-19
+  published: null
+  published_note: >-
+    Not published to a registry; GitHub release/tag dates were not readable this run (api.github.com answered
+    403 / rate-limit exceeded for unauthenticated calls). The MCP registry records server version 1.4.0 published
+    2026-09-01 as the latest listing.
+  engines: node >=18
+  dependencies: none (standard library only, no build step)
+  notes:
+  - Answers initialize and tools/list from a shipped snapshot (initialize.json, tools.json) when the endpoint is unreachable; tool calls need the network.
+  - Mirrors the 2026-07-28 MCP routing envelope into HTTP headers (MCP-Protocol-Version, Mcp-Method, Mcp-Name).
+  - Also carries a gemini-extension.json (httpUrl to the hosted endpoint) and a Claude Code .mcp.json.
+related_first_party_code:
+- name: repack.py
+  url: https://smklog.com/downloads/repack.py
+  kind: worked-example script (not a library)
+  language: python
+  install: none — one file, standard library only, no key
+  note: 'The worked example behind https://smklog.com/repack-line: two POST /quote requests pricing one item in two carton sizes; served as application/octet-stream, 37,708 bytes.'
+searched:
+- {registry: npm, query: '@smklog/parcel-shipping-rates-mcp', status: 404, url: 'https://registry.npmjs.org/@smklog%2Fparcel-shipping-rates-mcp'}
+- {registry: npm, query: smklog, results: 1, note: 'samarkand-smklog — unrelated logger'}
+- {registry: pypi, query: smklog, status: 200, note: 'smklog 1.1.3 by David Chen, home gitlab.com/samarkand-util/smklog — unrelated'}
+- {registry: github-user, query: smklog, status: 200, note: 'github.com/smklog ("Dmitrii T"); repository parcel-shipping-rates-mcp'}
+- {registry: mcp-registry, query: smklog, results: 5 versions, url: 'https://registry.modelcontextprotocol.io/v0/servers?search=smklog'}
+- {registry: smithery, url: 'https://smithery.ai/servers/smklog/parcel-shipping-rates', status: 200}
+- {registry: glama, url: 'https://glama.ai/mcp/servers/smklog/parcel-shipping-rates-mcp', status: 200}

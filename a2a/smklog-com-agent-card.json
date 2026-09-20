@@ -1,0 +1,70 @@
+{
+ "name": "SMKlog Parcel Quotes",
+ "description": "Prices one parcel from a US origin, domestic or to Canada, the UK, Germany or Australia, across USPS, UPS and FedEx (plus DHL Express to Germany and Australia) from a plain-words item description (box size and weight are estimated when omitted), and can prepare a payment session that a human completes behind the site consent gates. It answers in a single round trip and never moves money.",
+ "version": "1.4.0",
+ "supportedInterfaces": [
+  {
+   "url": "https://quote-api.smklog.com/a2a",
+   "protocolBinding": "JSONRPC",
+   "protocolVersion": "0.3.0"
+  }
+ ],
+ "provider": {
+  "organization": "SMKlog",
+  "url": "https://smklog.com"
+ },
+ "documentationUrl": "https://smklog.com/api",
+ "capabilities": {
+  "streaming": false,
+  "pushNotifications": false
+ },
+ "defaultInputModes": [
+  "application/json",
+  "text/plain"
+ ],
+ "defaultOutputModes": [
+  "application/json",
+  "text/plain"
+ ],
+ "skills": [
+  {
+   "id": "get_parcel_quote",
+   "name": "Get live parcel shipping rates from a US origin",
+   "description": "Send a DataPart {\"product\",\"from_zip\",\"to_zip\", optional \"to_country\",\"quantity\",\"weight_lb\",\"length_in\",\"width_in\",\"height_in\"}. Omit to_country for a domestic parcel; CA, GB, DE and AU are the international lanes sold online. Returns up to five purchasable services, each as one checkout total with the SMKlog fee inside it (the fee is itemized only on the checkout receipt) and, where the carrier publishes one, its own counter price for the same parcel beside it.",
+   "tags": [
+    "shipping",
+    "rates",
+    "usps",
+    "ups",
+    "fedex"
+   ],
+   "inputModes": [
+    "application/json"
+   ],
+   "outputModes": [
+    "application/json",
+    "text/plain"
+   ],
+   "examples": [
+    "{\"product\":\"Yamaha FG800 acoustic guitar in a hard case\",\"from_zip\":\"07102\",\"to_zip\":\"30303\"}"
+   ]
+  },
+  {
+   "id": "create_checkout_link",
+   "name": "Create a payment session for a parcel label",
+   "description": "Same DataPart fields plus optional \"service\". On the CA, GB, DE and AU lanes the customs declaration is completed by the human on the handoff page and duty is billed to the recipient on arrival. Returns the live amount, a handoff URL where a human confirms the shipping consents and pays, and a session_id; send {\"session_id\"} alone later to read whether the human paid and whether the label exists. The agent never charges anything.",
+   "tags": [
+    "shipping",
+    "checkout",
+    "payment-session"
+   ],
+   "inputModes": [
+    "application/json"
+   ],
+   "outputModes": [
+    "application/json",
+    "text/plain"
+   ]
+  }
+ ]
+}

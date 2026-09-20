@@ -1,0 +1,59 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the SMKlog Quote API
+  version: 1.0.0
+  description: >-
+    Non-destructive enhancements layered over the provider's OpenAPI 3.1.0 (fetched verbatim from
+    https://quote-api.smklog.com/openapi.json on 2026-09-19 and stored in openapi/_original/). Adds a tag
+    vocabulary, links each operation to the MCP tool and A2A skill that front it, and records the
+    cross-references into the sibling artifacts. The original is never mutated.
+extends: openapi/smklog-com-openapi.yml
+x-generated: '2026-09-19'
+x-method: generated
+actions:
+- target: $.info
+  update:
+    x-apievangelist:
+      provider: smklog-com
+      profiled: '2026-09-19'
+      surfaces:
+        mcp: https://quote-api.smklog.com/mcp
+        a2a: https://quote-api.smklog.com/a2a
+        agent_card: https://smklog.com/.well-known/agent-card.json
+        api_catalog: https://smklog.com/.well-known/api-catalog
+        agent_skills: https://quote-api.smklog.com/.well-known/agent-skills/index.json
+      artifacts:
+        conventions: conventions/smklog-com-conventions.yml
+        errors: errors/smklog-com-problem-types.yml
+        rate_limits: rate-limits/smklog-com-rate-limits.yml
+        authentication: authentication/smklog-com-authentication.yml
+        tool_crosswalk: mcp/smklog-com-tool-crosswalk.yml
+- target: $
+  update:
+    tags:
+    - name: quotes
+      description: Live parcel rate quotes from a US origin.
+    - name: checkout
+      description: Agent-prepared payment sessions completed by a human on smklog.com.
+    - name: operations
+      description: Liveness.
+- target: $.paths['/quote'].post
+  update:
+    tags: [quotes]
+    x-mcp-tool: get_parcel_quote
+    x-a2a-skill: get_parcel_quote
+    x-rate-limit: about 80 requests an hour per client, shared with the MCP endpoint
+- target: $.paths['/agent/checkout-session'].post
+  update:
+    tags: [checkout]
+    x-mcp-tool: create_checkout_link
+    x-a2a-skill: create_checkout_link
+    x-rate-limit: shares the quote bucket
+- target: $.paths['/agent/checkout-session/{session_id}'].get
+  update:
+    tags: [checkout]
+    x-mcp-tool: get_checkout_status
+    x-rate-limit: 60 checks an hour per client
+- target: $.paths['/status'].get
+  update:
+    tags: [operations]

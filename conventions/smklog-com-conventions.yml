@@ -1,0 +1,122 @@
+generated: '2026-09-19'
+method: searched
+source: >-
+  openapi/smklog-com-openapi.yml (verbatim provider spec), the live MCP tools/list (annotations and tool text),
+  the A2A agent card, auth.md, api.md, the two provider SKILL.md files, the terms of service (effective
+  2026-05-24) and four observed unauthenticated responses, all fetched 2026-09-19.
+description: >-
+  How the SMKlog Quote API behaves across every operation: open by default with an optional OAuth bucket, no
+  idempotency contract at all (the one write is explicitly not idempotent), no pagination, no expansion, no
+  request-id, unversioned paths, a flat JSON error envelope, 429 with no headers, a metric-vs-imperial split between
+  the REST body and the MCP tool, and a write surface that never moves money — reversal of the purchase belongs to
+  the human checkout on smklog.com, not to the API.
+
+base_url: https://quote-api.smklog.com
+api_style: >-
+  REST over HTTPS with JSON bodies (POST-only actions, GET reads), plus MCP Streamable HTTP (POST /mcp) and A2A
+  JSON-RPC (POST /a2a) on the same host, all backed by one pricing pipeline ("there is no separate API rate").
+
+authentication:
+  scheme: none required; optional OAuth 2.0 client_credentials bearer (prefix smk_at_, one hour, scope quote) for a larger hourly bucket
+  unauthenticated_response: 'POST /quote {} -> 400 missing_required_fields (observed) — the anonymous path is the normal path'
+  detail: authentication/smklog-com-authentication.yml
+
+idempotency:
+  supported: false
+  coverage: none
+  scope: []
+  mechanism: none — no Idempotency-Key header, no client request id, no replay detection is documented anywhere
+  provider_statement: >-
+    create_checkout_link "writes a session record (30-day life, readable through get_checkout_status) and is not
+    idempotent. Calling it twice makes two sessions and, without a quote_id, spends two carrier calls." (MCP tool
+    text); annotations idempotentHint false on get_parcel_quote and create_checkout_link, true on the three reads.
+  mitigation: reuse quote_id (valid 15 minutes) so a repeated checkout call does not spend a second carrier call; a duplicate session is harmless because nothing is charged until a human pays
+  note: The write surface is one operation (createPaymentSession) that reserves nothing and charges nothing, so the blast radius of a double-fire is an extra session record and possibly an extra rate-limited carrier call — but there is no replay contract, so coverage is none and no Idempotency pointer is emitted.
+
+reversibility:
+  grade: none
+  api_read_only: false
+  write_surface:
+  - operation: createPaymentSession
+    creates: a payment session (session_id, handoff_url, amount) — no money moves, no label is bought
+    reversal: none in the API — no cancel/void/delete operation exists; the session expires 30 days after creation and "a stale link simply reprices"
+    window: 30-day session life (openapi getCheckoutStatus description) — an expiry, not a reversal window
+    docs: https://quote-api.smklog.com/openapi.json
+  - operation: getParcelQuote
+    creates: a quote_id valid 15 minutes (a live carrier call is spent)
+    reversal: not applicable — nothing to reverse; the allowance spent is not refundable
+  human_side_reversals:
+  - action: label purchase (completed by the human on smklog.com, outside the API)
+    reversal: 'terms "Label Refunds and Voids": if a paid label cannot be created SMKlog refunds the label payment; unused labels "may be eligible for carrier void or postage refund only when allowed by the selected carrier"; Pro/Business "Refund Recovery" requests carrier refunds automatically'
+    window: not stated as a duration for voids; carrier adjustments are billed "within 30 days of carrier acceptance" and incorrect ones "are refunded to the same payment method"
+    visible_to_agent: yes — getCheckoutStatus reports status refunded
+    docs: https://smklog.com/terms
+  note: >-
+    The API exposes no reversal operation for its only write, so the grade is none. That is a design choice the
+    provider states plainly ("The agent prepares, the person pays"; "an agent cannot spend someone's money through
+    this server"): the irreversible act — buying the label — is deliberately kept off the API, and its refund path is a
+    human policy in the terms, surfaced to the agent read-only as the refunded status. No window is invented here.
+
+dry_run_mode:
+  supported: partial
+  mechanism: >-
+    get_price_index (MCP) answers "what does shipping cost" from the monthly basket without spending quote allowance;
+    createPaymentSession itself charges nothing ("no card is touched and nothing is reserved until the human
+    confirms ... and pays"). There is no dry-run flag on getParcelQuote — every quote is a real carrier call.
+  note: The provider asks agents to quote once per shipment and cache.
+
+units_and_field_names:
+  rest_body: metric — from_postal_code, to_postal_code, to_country_code, weight_kg, length_cm, width_cm, height_cm, package_source, product_url
+  mcp_tools_and_a2a_dataparts: imperial — from_zip, to_zip, to_country, weight_lb, length_in, width_in, height_in
+  rule_shared: 'all four dimension/weight fields or none; a partial set is ignored in favour of the estimate'
+  money: 'amount (checkout total, SMKlog fee inside), retail_amount (carrier counter price or 0), plus carrier_amount and service_fee described in api.md; currency USD'
+
+pagination:
+  style: none
+  note: 'No list operations; rates[] is capped at five services, scan events at eight (newest first), price-index issues at one per month.'
+
+field_expansion: {supported: false}
+sparse_fields: {supported: false}
+metadata: {supported: false}
+
+request_tracing:
+  request_id_header: none documented or observed
+  correlation: quote_id (15 min) and session_id (as_ + UUID, 30 days) are the only handles
+
+async_pattern:
+  style: create-then-poll for checkout; optional MCP tasks for freight review
+  steps: 'createPaymentSession -> hand handoff_url to a human -> poll getCheckoutStatus (awaiting_checkout -> checkout_started -> paid -> label_ready -> delivered | refunded), minutes apart'
+  tasks_extension: 'MCP clients declaring io.modelcontextprotocol/tasks receive a durable task handle for freight/oversize quotes ("answers usually take a few business hours"); poll with tasks/get'
+  push: none (agent card pushNotifications false; no webhooks)
+
+versioning:
+  scheme: unversioned paths; product semver 1.4.0 shared across OpenAPI, agent card and MCP server
+  detail: lifecycle/smklog-com-lifecycle.yml
+
+error_envelope:
+  media_type: application/json
+  shape: '{"error": "<snake_case_code>", "message"?, "missing"?[]}'
+  non_error_refusals: 'HTTP 200 with mode freight_manager / restricted / international_unsupported_online and empty rates'
+  detail: errors/smklog-com-problem-types.yml
+
+rate_limit_signaling:
+  status_on_exhaustion: 429 rate_limited
+  headers: none documented or observed
+  buckets: '~80 quotes/hour per client shared across /quote, MCP and A2A; 60 checkout-status reads/hour; tracking and price index exempt'
+  detail: rate-limits/smklog-com-rate-limits.yml
+
+caching:
+  discovery_documents: 'cache-control public, max-age=3600 on GET /status and /openapi.json (observed)'
+  mcp_tools_list: 'ttlMs 86400000, cacheScope public on tools/list (observed)'
+  errors: cache-control no-store (observed on the 400)
+
+cors:
+  discovery_gets: 'access-control-allow-origin * ; allow-headers Content-Type, Accept, MCP-Protocol-Version; allow-methods GET, POST, OPTIONS (observed)'
+  quote_post_error: 'access-control-allow-origin https://smklog.com with allow-credentials true (observed on the 400) — browser callers from other origins should expect to be refused on the action routes'
+
+agent_rules_stated_by_provider:
+  - 'Quote the total to users and say the fee is inside (llms.txt).'
+  - 'Call once per shipment, cache on your side, never poll (api.md).'
+  - 'The agent never charges anything; consents are collected from the human on the handoff page, not from the agent (create-checkout-link SKILL.md).'
+  - 'Labels for restricted items are refused at quote time, not after payment (SKILL.md).'
+  - 'Treat the session_id like a tracking number: whoever holds it can read the tracking number (get_checkout_status tool text).'

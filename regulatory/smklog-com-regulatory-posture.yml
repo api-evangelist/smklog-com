@@ -1,0 +1,45 @@
+generated: '2026-09-19'
+method: searched
+probe: true
+source: >-
+  https://smklog.com/privacy (effective 2026-02-08), https://smklog.com/terms (effective 2026-05-24),
+  https://smklog.com/robots.txt, well-known/smklog-com-security.txt, lifecycle/smklog-com-lifecycle.yml, plus live
+  probes of the conventional paths listed below, all 2026-09-19.
+note: >-
+  One horizontal signal is published with substance: the privacy policy names a data-subject-request channel
+  ("You may request access, correction, or deletion of your personal data by contacting privacy@smklog.com.
+  Where applicable, you may also request portability or object to certain processing."). Nothing else on the
+  list is published: no SBOM, no support-lifetime statement, no accessibility conformance report, no AI
+  transparency page, no Global Privacy Control statement, no subprocessor table (the privacy policy names
+  categories — carrier, payment processor, logistics providers — not a dated list), no data-residency page, no
+  incident-notification SLA, no age-assurance, notice-and-action, transparency report or exit-assistance
+  documentation. The robots.txt carries a Content-Signal line (search=yes, ai-input=yes, ai-train=yes,
+  use=reference, "owner decision 2026-08-07") — an AI-use content signal recorded here for the reader, not one of
+  the fourteen pointer types.
+signals:
+  data_subject_request:
+    url: https://smklog.com/privacy
+    channel: mailto:privacy@smklog.com
+    rights_stated: [access, correction, deletion, portability (where applicable), objection (where applicable)]
+    evidence: [{source: 'https://smklog.com/privacy', section: Your Rights, fetched: '2026-09-19', status: 200}]
+probes:
+- {url: 'https://smklog.com/privacy', status: 200}
+- {url: 'https://smklog.com/terms', status: 200}
+- {url: 'https://smklog.com/accessibility', status: 404}
+- {url: 'https://smklog.com/accessibility/vpat', status: 404}
+- {url: 'https://smklog.com/legal/subprocessors', status: 404}
+- {url: 'https://smklog.com/legal/dpa', status: 404}
+- {url: 'https://smklog.com/privacy/requests', status: 404}
+- {url: 'https://smklog.com/transparency', status: 404}
+- {url: 'https://smklog.com/trust', status: 404}
+- {url: 'https://smklog.com/security', status: 404}
+- {url: 'https://smklog.com/security/sbom', status: 404}
+- {url: 'https://smklog.com/ai', status: 404}
+- {url: 'https://smklog.com/ai/transparency', status: 404}
+- {url: 'https://smklog.com/legal/report-content', status: 404}
+- {url: 'https://smklog.com/docs/data-residency', status: 404}
+- {url: 'https://smklog.com/robots.txt', status: 200, note: 'Content-Signal: search=yes, ai-input=yes, ai-train=yes, use=reference'}
+adjacent_statements:
+- 'Terms: carrier adjustment corrections are billed "within 30 days of carrier acceptance"; disputed adjustments found incorrect "are refunded to the same payment method" — recorded in conventions/ reversibility, not a regulatory signal.'
+- 'Terms: for international labels the customer is the exporter / USPPI and AES/EEI filing at $2,500+ is the customer''s responsibility — a trade-compliance allocation, not a published control.'
+- 'Privacy: the Chrome extension section states no data leaves the browser until the quote button is pressed and no browsing history, passwords or card numbers are collected.'

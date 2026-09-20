@@ -1,23 +1,148 @@
 aid: smklog-com
 name: SMKlog
-description: 'SMKlog is a company surfaced via the API Evangelist harvest backlog (source: a2a-registry)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'SMKlog (SMKLOG-2022 LLC, Berkeley Heights, New Jersey) is an independent US parcel shipping
+  calculator and label seller: describe an item in plain words, get live USPS, UPS, FedEx and DHL Express
+  rates from a US origin to the US, Canada, the UK, Germany or Australia, and buy the label online. The same
+  pricing engine is published for machines as the SMKlog Quote API on quote-api.smklog.com: an OpenAPI 3.1
+  contract with no key required, a remote MCP server with five tools (plus an open-source stdio bridge), an
+  A2A agent card, an RFC 9727 api-catalog, RFC 8414/9728 OAuth metadata for an optional client_credentials
+  rate-limit tier, two provider-published Agent Skills and an llms.txt. Agents price and prepare checkout;
+  a human always completes payment on smklog.com.'
+image: https://smklog.com/assets/icon-512.png
 url: https://raw.githubusercontent.com/api-evangelist/smklog-com/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:a2a-registry
-x-tier: stub
-x-tier-reason: harvest
+x-tier: profiled
+x-tier-reason: full-pipeline enrichment 2026-09-19 from the live smklog.com and quote-api.smklog.com surface
 specificationVersion: '0.20'
 created: '2026-09-19'
 modified: '2026-09-19'
 tags:
 - Company
-apis: []
+- Shipping
+- Logistics
+- Parcel Shipping
+- Shipping Rates
+- Shipping Labels
+- Ecommerce
+- Agents
+- MCP
+- A2A
+apis:
+- name: SMKlog Quote API
+  description: 'Live parcel shipping rates and agent-prepared checkout for one parcel sent from a US origin.
+    Four operations: POST /quote prices an item described in plain words (or by product URL) across USPS,
+    UPS, FedEx and DHL Express, estimating the packed box when dimensions are omitted and returning up to five
+    purchasable services with the checkout total, the carrier counter price and the delivery window; POST
+    /agent/checkout-session creates a payment session (MPP intent "session") and a handoff URL where a human
+    confirms consents and pays on Stripe hosted checkout; GET /agent/checkout-session/{session_id} reports
+    whether the human paid and whether the label exists; GET /status is a liveness probe. No key is required;
+    requests are rate limited per client (about 80 quotes an hour, shared with the MCP endpoint) and an
+    optional OAuth 2.0 client_credentials token, issued manually, raises the bucket.'
+  image: https://smklog.com/assets/icon-512.png
+  humanURL: https://smklog.com/api
+  baseURL: https://quote-api.smklog.com
+  tags:
+  - Shipping
+  - Shipping Rates
+  - Parcel Shipping
+  - Checkout
+  - Logistics
+  - MCP
+  - A2A
+  properties:
+  - type: OpenAPI
+    url: openapi/smklog-com-openapi.yml
+  - type: OpenAPI
+    name: Provider-hosted OpenAPI 3.1.0 (verbatim source in openapi/_original/)
+    url: https://quote-api.smklog.com/openapi.json
+  - type: Documentation
+    url: https://smklog.com/api
+  - type: APIReference
+    url: https://quote-api.smklog.com/openapi.json
+  - type: GettingStarted
+    url: https://smklog.com/repack-line
+  - type: MCPServer
+    url: mcp/smklog-com-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/smklog-com-tool-crosswalk.yml
+  - type: Authentication
+    url: authentication/smklog-com-authentication.yml
+  - type: OAuthScopes
+    url: scopes/smklog-com-scopes.yml
+  - type: Conventions
+    url: conventions/smklog-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/smklog-com-problem-types.yml
+  - type: Lifecycle
+    url: lifecycle/smklog-com-lifecycle.yml
+  - type: Conformance
+    url: conformance/smklog-com-conformance.yml
+  - type: RateLimits
+    url: rate-limits/smklog-com-rate-limits.yml
+  - type: Plans
+    url: plans/smklog-com-plans-pricing.yml
+  - type: DataModel
+    url: data-model/smklog-com-data-model.yml
+  - type: Overlay
+    url: overlays/smklog-com-quote-api-overlay.yaml
+  - type: ChangeLog
+    url: changelog/smklog-com-changelog.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: VulnerabilityDisclosure
+  url: security/smklog-com-vulnerability-disclosure.yml
 - type: Website
   url: https://smklog.com/
+- type: Documentation
+  url: https://smklog.com/api
+- type: APIReference
+  url: https://quote-api.smklog.com/openapi.json
+- type: GettingStarted
+  url: https://smklog.com/repack-line
+- type: Support
+  url: https://smklog.com/support
+- type: Pricing
+  url: https://smklog.com/pricing
+- type: TermsOfService
+  url: https://smklog.com/terms
+- type: PrivacyPolicy
+  url: https://smklog.com/privacy
+- type: GitHubOrganization
+  url: https://github.com/smklog
+- type: LLMsTxt
+  url: llms/smklog-com-llms.txt
+- type: LLMsTxt
+  name: Provider-hosted llms.txt
+  url: https://smklog.com/llms.txt
+- type: AgentCard
+  url: a2a/smklog-com-a2a.yml
+- type: MCPServer
+  url: mcp/smklog-com-mcp.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: WellKnown
+  url: well-known/smklog-com-well-known.yml
+- type: SecurityTxt
+  url: well-known/smklog-com-security.txt
+- type: Security
+  url: https://smklog.com/.well-known/security.txt
+- type: Packages
+  url: packages/smklog-com-packages.yml
+- type: Authentication
+  url: authentication/smklog-com-authentication.yml
+- type: OAuthScopes
+  url: scopes/smklog-com-scopes.yml
+- type: DomainSecurity
+  url: security/smklog-com-domain-security.yml
+- type: DataSubjectRequest
+  url: https://smklog.com/privacy
+x-enrichment:
+  date: '2026-09-19'
+  status: enriched
+  artifacts_added: 38
+  pass: local-v3

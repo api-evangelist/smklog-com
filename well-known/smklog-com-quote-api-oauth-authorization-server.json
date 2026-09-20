@@ -1,0 +1,39 @@
+{
+ "issuer": "https://quote-api.smklog.com",
+ "token_endpoint": "https://quote-api.smklog.com/oauth/token",
+ "grant_types_supported": [
+  "client_credentials"
+ ],
+ "token_endpoint_auth_methods_supported": [
+  "client_secret_basic",
+  "client_secret_post"
+ ],
+ "scopes_supported": [
+  "quote"
+ ],
+ "response_types_supported": [],
+ "service_documentation": "https://smklog.com/api",
+ "registration_instructions": "https://quote-api.smklog.com/auth.md",
+ "agent_auth": {
+  "skill": "https://quote-api.smklog.com/auth.md",
+  "register_uri": "mailto:info@smklog.com",
+  "registration_methods": [
+   "manual_email"
+  ],
+  "identity_types_supported": [
+   "service"
+  ],
+  "service": {
+   "credential_types_supported": [
+    "client_secret"
+   ],
+   "claim_uri": "mailto:info@smklog.com"
+  },
+  "scopes_supported": [
+   "quote"
+  ],
+  "bearer_methods_supported": [
+   "header"
+  ]
+ }
+}

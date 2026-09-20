@@ -1,0 +1,57 @@
+generated: '2026-09-19'
+method: derived
+source: >-
+  4xx responses declared in openapi/smklog-com-openapi.yml (descriptions only — no error schema is declared),
+  the MCP tool descriptions (mcp/smklog-com-tools-list.json), auth.md, and four error bodies observed live on
+  2026-09-19 (POST /quote with an empty body; GET /agent/checkout-session/ae-probe-nonexistent; GET /mcp;
+  POST /oauth/token without credentials).
+format: json-envelope
+envelope:
+  media_type: application/json
+  shape: '{"error": "<snake_case_code>", "message"?: "<human text>", "missing"?: ["<field>", ...]}'
+  schema: none declared in the spec
+  request_id_header: none observed
+  mcp_errors: MCP-level errors travel inside the JSON-RPC envelope; tool-level refusals reuse the same snake_case codes in the tool result text
+observed_codes:
+- {code: missing_required_fields, http: 400, body: '{"error":"missing_required_fields","missing":["quantity","from_postal_code","to_postal_code","product_or_product_url"]}', observed_on: 'POST /quote {}', remediation: 'Send quantity, from_postal_code, to_postal_code and either product or product_url.'}
+- {code: session_not_found, http: 404, body: '{"error":"session_not_found","message":"Pass the session_id returned by create_checkout_link; it starts with as_."}', observed_on: 'GET /agent/checkout-session/ae-probe-nonexistent', remediation: 'Use the as_ session_id from createPaymentSession; sessions expire after 30 days.'}
+- {code: method_not_allowed, http: 405, body: '{"error":"method_not_allowed","message":"POST JSON-RPC 2.0 messages to this endpoint."}', observed_on: 'GET /mcp (and GET /a2a)', remediation: 'POST JSON-RPC 2.0 with Accept: application/json, text/event-stream.'}
+- {code: invalid_client, http: 401, body: '{"error":"invalid_client"}', observed_on: 'POST /oauth/token grant_type=client_credentials without credentials', remediation: 'Present client_id/client_secret (basic or post); credentials are issued manually by info@smklog.com.'}
+- {code: -32001, http: 200, body: '{"jsonrpc":"2.0","id":1,"error":{"code":-32001,"message":"Task not found: this agent answers stateless messages and creates no tasks."}}', observed_on: 'POST /a2a tasks/get', remediation: 'Use message/send; the A2A agent is stateless.'}
+declared_responses:
+- operation: getParcelQuote
+  statuses: [400, 422, 429]
+  codes:
+  - {code: invalid_json, http: 400}
+  - {code: invalid_request, http: 400}
+  - {code: missing_required_fields, http: 400, note: 'with a missing[] array'}
+  - {code: invalid_us_zip, http: 400, note: 'from_zip must be a real 5-digit US ZIP (MCP tool text; the spec says "postal validation failure")'}
+  - {code: product_not_recognized, http: 400, note: 'a bare route, bare weight or a question is refused before any carrier is called (MCP tool text)'}
+  - {code: international_unsupported_online, http: 200, note: 'a to_country outside US/CA/GB/DE/AU comes back as a mode with no rates, not an HTTP error'}
+  - {code: product_url_not_detected, http: 422, note: 'the page did not identify an item'}
+  - {code: rate_limited, http: 429, note: 'the same buckets cover /quote and /mcp'}
+- operation: createPaymentSession
+  statuses: [422, 429]
+  codes:
+  - {code: session_failed, http: 422, note: 'unpriceable, restricted, or routed to human freight review'}
+  - {code: missing_required_fields, http: 400, note: 'an expired quote_id with no fields alongside it (MCP tool text; 400 not declared on this operation in the spec)'}
+  - {code: rate_limited, http: 429, note: shares the quote bucket}
+- operation: getCheckoutStatus
+  statuses: [404, 429]
+  codes:
+  - {code: session_not_found, http: 404, note: 'unknown, malformed or expired session_id'}
+  - {code: rate_limited, http: 429, note: 60 checks an hour per client}
+- operation: status
+  statuses: []
+mcp_only_codes:
+- {tool: track_parcel, code: tracking_number_required, note: 'fewer than 6 characters after removing spaces/hyphens'}
+- {tool: track_parcel, code: tracking_not_found, http: 404, note: 'a number SMKlog never sold; status "not_found"'}
+- {tool: get_price_index, code: issue_not_found, note: 'returned together with available_months'}
+- {tool: get_price_index, code: invalid_month, note: 'anything not shaped YYYY-MM'}
+- {surface: oauth, code: invalid_token, http: 401, note: 'expired or revoked bearer on POST /quote; never silently downgraded to anonymous limits (auth.md)'}
+non_error_outcomes:
+- 'mode freight_manager — HTTP 200 with empty rates: palletized, crated, oversized, quantity > 1, or freight-worded shipments are priced by a person (or, over MCP with the tasks extension, returned as a durable task handle).'
+- 'mode restricted — HTTP 200 with empty rates and an explanation.'
+notes:
+- The provider publishes no error-code reference page; codes above are the union of the spec descriptions, the MCP tool text and the observed bodies. No 5xx is declared anywhere.
+- No Retry-After, RateLimit-* or request-id header was declared or observed on any response.

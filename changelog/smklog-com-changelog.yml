@@ -1,0 +1,46 @@
+generated: '2026-09-19'
+method: probed
+source: https://registry.modelcontextprotocol.io/v0/servers?search=smklog
+sources:
+- https://registry.modelcontextprotocol.io/v0/servers?search=smklog
+- https://quote-api.smklog.com/openapi.json (info.version)
+- https://raw.githubusercontent.com/smklog/parcel-shipping-rates-mcp/main/package.json
+description: >-
+  SMKlog publishes no changelog page (/changelog and /api/changelog 404) and the GitHub releases list was not
+  readable this run (unauthenticated api.github.com rate-limited). The only dated version history the provider
+  publishes is its own sequence of MCP registry listings, recorded here verbatim; highlights are limited to what
+  changed between the listed descriptions. The OpenAPI, agent card, MCP serverInfo and server card all report
+  1.4.0, and the stdio bridge's package.json reports 1.4.1.
+scheme: semver, one product version shared by the OpenAPI, agent card, MCP server and server card
+current: 1.4.0
+current_source: https://quote-api.smklog.com/openapi.json (info.version) and https://quote-api.smklog.com/status (version) on 2026-09-19
+entries:
+- version: 1.4.0
+  date: '2026-09-01'
+  source: MCP registry listing (isLatest true)
+  breaking: false
+  highlights:
+  - Description expanded to "domestic, Canada, UK, Germany, Australia" lanes; title "SMKlog Parcel Shipping Rates"; repository github.com/smklog/parcel-shipping-rates-mcp; icon added.
+- version: 1.3.0
+  date: '2026-09-01'
+  source: MCP registry listing
+  breaking: false
+  highlights: [Same-day predecessor of 1.4.0 with the international-lanes description.]
+- version: 1.2.0
+  date: '2026-08-28'
+  source: MCP registry listing
+  breaking: false
+  highlights: [First listing to name the GitHub repository and a title; description still US-only ("Live USPS, UPS and FedEx shipping rates for a US parcel described in plain words").]
+- version: 1.1.0
+  date: '2026-08-25'
+  source: MCP registry listing
+  breaking: false
+  highlights: [Second listing on the first day; remotes streamable-http https://quote-api.smklog.com/mcp unchanged.]
+- version: 1.0.1
+  date: '2026-08-25'
+  source: MCP registry listing
+  breaking: false
+  highlights: [First public registry listing of com.smklog/parcel-shipping-rates.]
+notes:
+- 'The parcel price index pages (July 2026, August 2026 issues) are dated data releases, not API changes.'
+- 'Legal documents carry their own effective dates: privacy 2026-02-08, terms 2026-05-24, shipping protection rules 2026-06-15, security.txt expires 2027-07-29.'

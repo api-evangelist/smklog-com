@@ -1,0 +1,75 @@
+generated: '2026-09-19'
+method: searched
+source: https://smklog.com/pricing
+sources:
+- https://smklog.com/pricing
+- https://smklog.com/api
+- https://smklog.com/auth.md
+- https://quote-api.smklog.com/.well-known/oauth-protected-resource
+provider: SMKlog
+providerId: smklog-com
+plan_count: 3
+currency: USD
+description: >-
+  The Quote API itself has no priced tier: "Do I need an account or a key? No for normal use: quoting and payment
+  sessions are open, rate limited per client" and "What does a call cost me? Nothing." A higher hourly bucket is
+  granted by manually issued OAuth credentials, with no published price. The pricing page prices the consumer
+  product (the calculator account, not API calls): three tiers, monthly or annual, with "API and white-label"
+  listed under Business as coming soon. Recorded verbatim from the page on 2026-09-19.
+api_access:
+  price: free
+  key_required: false
+  limit: about 80 quote requests an hour per client, shared between /quote and /mcp; 60 checkout-status reads an hour
+  higher_tier: OAuth client_credentials bucket "at its own size", issued manually by email, price not published
+  quote: '"Quoting, tracking and the price index are open with no token. Credentials only raise the per-client rate limit" — oauth-protected-resource on quote-api.smklog.com'
+plans:
+- id: free
+  name: Free
+  price: 0
+  currency: USD
+  billing_period: month
+  quote: '"Free forever — it''s a plan, not a trial."'
+  included:
+  - 15 quotes per month (3 without an account)
+  - Basic item estimate
+  - 'Carrier comparison: 1 option, retail rate'
+  - 'International labels online: CA, UK, DE, AU (other lanes by request)'
+  - Email support
+  limits: {quotes_per_month: 15, quotes_without_account: 3}
+- id: pro
+  name: Pro
+  price: 24
+  currency: USD
+  billing_period: month
+  annual_equivalent: '$19/mo billed annually'
+  trial: 14-day trial, no card required
+  included:
+  - Unlimited quotes
+  - 'Full item analysis: dimensions, weight, dimensional weight per item'
+  - All carriers side by side, commercial rates
+  - 'Adjustment Shield: surprise carrier adjustments covered up to $25/mo'
+  - 'eBay sync, 1 store: sold order -> label in one click'
+  - 'Refund Recovery: automatic refunds for unused labels'
+  - 'International document autopilot: CA, UK, DE, AU (coming soon)'
+  - Dispatcher support + door pickup scheduling
+  limits: {quotes_per_month: unlimited, adjustment_shield_cap_usd_per_month: 25}
+- id: business
+  name: Business
+  price: 79
+  currency: USD
+  billing_period: month
+  annual_equivalent: '$64/mo billed annually'
+  trial: 14-day trial, no card required
+  included:
+  - Everything in Pro
+  - Deeper carrier discounts
+  - Adjustment Shield covered up to $100/mo
+  - eBay sync included; multiple stores + team access (coming soon)
+  - Refund Recovery included + we file carrier claims for you
+  - 'International: EEI filings, DDP, customs bounce-backs handled by us (coming soon)'
+  - Dedicated manager, invoicing with payment terms, compliance kit
+  - API and white-label (coming soon)
+  limits: {quotes_per_month: unlimited, adjustment_shield_cap_usd_per_month: 100}
+notes:
+- 'Label purchases are pay-per-label on every plan ("All plans buy real labels from real carriers"); the checkout amount returned by the API is "the complete checkout total with the SMKlog fee inside; the fee is itemized only on the checkout receipt".'
+- 'Optional shipping protection is a separate per-label price during a US-domestic pilot capped at $500 declared value (https://smklog.com/insurance, last updated 2026-06-15).'

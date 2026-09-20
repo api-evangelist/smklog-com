@@ -1,0 +1,24 @@
+{
+ "linkset": [
+  {
+   "anchor": "https://quote-api.smklog.com/",
+   "service-desc": [
+    {
+     "href": "https://quote-api.smklog.com/openapi.json",
+     "type": "application/openapi+json"
+    }
+   ],
+   "service-doc": [
+    {
+     "href": "https://smklog.com/api",
+     "type": "text/html"
+    }
+   ],
+   "status": [
+    {
+     "href": "https://quote-api.smklog.com/status"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,45 @@
+generated: '2026-09-19'
+method: searched
+docs: https://smklog.com/auth.md
+source: >-
+  https://smklog.com/auth.md (saved verbatim as authentication/smklog-com-auth.md), the RFC 8414 / RFC 9728
+  metadata on both hosts (well-known/), the MCP server card authentication block, and the OpenAPI, which declares
+  no securitySchemes at all — 0-working/derive-authentication.py therefore produced no profile and this file is
+  hand-written from the provider's own documents.
+summary:
+  types: [none, oauth2]
+  required: false
+  api_key_in: []
+  oauth2_flows: [clientCredentials]
+  default: anonymous — every operation answers without credentials
+schemes:
+- name: anonymous
+  type: none
+  applies_to: [getParcelQuote, createPaymentSession, getCheckoutStatus, status, 'MCP tools/list + tools/call', 'A2A message/send']
+  note: >-
+    "The API works without credentials: rate quotes and payment sessions are open, rate limited per client per
+    hour." (auth.md). The protected-resource document on the API host states authorization_required false.
+- name: SMKlog client_credentials
+  type: oauth2
+  flow: clientCredentials
+  issuer: https://quote-api.smklog.com
+  tokenUrl: https://quote-api.smklog.com/oauth/token
+  token_endpoint_auth_methods: [client_secret_basic, client_secret_post]
+  scopes: [quote]
+  bearer: 'Authorization: Bearer smk_at_... on POST /quote'
+  token_lifetime: one hour
+  purpose: >-
+    "Credentials exist for one reason — an agent whose legitimate traffic outgrows the anonymous limits gets its
+    own hourly bucket at its own size." Not identity, not authorization for payment.
+  registration: manual — email info@smklog.com with what you are building and the expected volume; the secret is shown once
+  failure: '401 invalid_token on an expired or revoked token; "the request is never silently downgraded to anonymous limits, so failures are loud"'
+  sources: [https://smklog.com/auth.md, https://quote-api.smklog.com/.well-known/oauth-authorization-server]
+capabilities:
+  session_id: >-
+    createPaymentSession returns an opaque session_id (pattern ^as_[A-Za-z0-9-]{8,80}$) that is the only thing
+    needed to read that session's status — a bearer-by-knowledge capability, unauthenticated otherwise; the
+    status answer "never carries names, addresses or emails".
+observed:
+- 'POST /oauth/token without credentials -> 401 application/json {"error":"invalid_client"} (2026-09-19)'
+- 'POST /quote with an empty body, no credentials -> 400 missing_required_fields (the anonymous path works; nothing challenged for auth)'
+detail: scopes/smklog-com-scopes.yml

@@ -1,0 +1,318 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "SMKlog Quote API",
+  "version": "1.4.0",
+  "description": "Live parcel rates from USPS, UPS, FedEx and DHL Express for a single shipment sent from a US origin: inside the US, or to Canada, the UK, Germany or Australia. Describe the item in plain words and the packed box size and weight are estimated server-side; supply exact dimensions and weight to skip the estimate. No account and no key. Rate limited per client (about 80 quote requests per hour); quotes cost real money to produce, so cache on your side and do not poll. Buying a label happens on smklog.com — this API prices, it does not sell.",
+  "termsOfService": "https://smklog.com/terms",
+  "contact": {
+   "name": "SMKlog",
+   "email": "info@smklog.com",
+   "url": "https://smklog.com/api"
+  }
+ },
+ "servers": [
+  {
+   "url": "https://quote-api.smklog.com"
+  }
+ ],
+ "paths": {
+  "/quote": {
+   "post": {
+    "operationId": "getParcelQuote",
+    "summary": "Price one parcel from a US origin across USPS, UPS and FedEx (plus DHL Express to Germany and Australia)",
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [
+         "quantity",
+         "from_postal_code",
+         "to_postal_code"
+        ],
+        "properties": {
+         "product": {
+          "type": "string",
+          "description": "Plain-words item description, e.g. \"Yamaha FG800 acoustic guitar in a hard case\". Required unless product_url is given. Drives the box and weight estimate when dimensions are omitted."
+         },
+         "product_url": {
+          "type": "string",
+          "description": "Store product page URL; the item is identified from the page. Alternative to product."
+         },
+         "quantity": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Identical parcels. 1 is priced online; more routes the request to a person (mode freight_manager, empty rates)."
+         },
+         "from_postal_code": {
+          "type": "string",
+          "description": "5-digit US ZIP; the origin is always in the United States."
+         },
+         "to_postal_code": {
+          "type": "string",
+          "description": "5-digit US ZIP when to_country_code is US or omitted; otherwise the destination country's own postal code."
+         },
+         "to_country_code": {
+          "type": "string",
+          "enum": [
+           "US",
+           "CA",
+           "GB",
+           "DE",
+           "AU"
+          ],
+          "default": "US",
+          "description": "Destination country. Sold online: US, CA, GB, DE, AU; any other answers mode international_unsupported_online with no rates."
+         },
+         "length_cm": {
+          "type": "number",
+          "description": "Packed box length. Supply all four of length_cm, width_cm, height_cm, weight_kg to skip the estimate."
+         },
+         "width_cm": {
+          "type": "number"
+         },
+         "height_cm": {
+          "type": "number"
+         },
+         "weight_kg": {
+          "type": "number",
+          "description": "Packed weight, kg. Online pricing stops at 68 kg (150 lb), 274 cm (108 in) on the longest side and 419 cm (165 in) of length plus girth; beyond that the response is mode freight_manager."
+         },
+         "package_source": {
+          "type": "string",
+          "description": "Set to \"manual\" when supplying exact dimensions."
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Priced (mode parcel_label_ready, up to 5 rates), routed to a human (mode freight_manager, empty rates — palletized, crated or oversized shipments are priced by a person), or restricted (empty rates with an explanation).",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "properties": {
+          "mode": {
+           "type": "string"
+          },
+          "identified_product_title": {
+           "type": "string"
+          },
+          "package": {
+           "type": "object",
+           "description": "The packed box used for pricing: dimensions, weight, confidence, assumptions."
+          },
+          "rates": {
+           "type": "array",
+           "items": {
+            "type": "object",
+            "description": "One purchasable service. Two prices are returned and they are not interchangeable: amount is the checkout total a customer pays, with the SMKlog fee inside it (the fee is itemized only on the checkout receipt), and retail_amount is the carrier’s own counter price for the same parcel where the carrier publishes one (0 where it does not).",
+            "properties": {
+             "carrier": {
+              "type": "string",
+              "description": "USPS, UPS, FedEx or DHL"
+             },
+             "service": {
+              "type": "string"
+             },
+             "service_code": {
+              "type": "string"
+             },
+             "amount": {
+              "type": "number",
+              "description": "Checkout total, USD, SMKlog fee inside"
+             },
+             "retail_amount": {
+              "type": "number",
+              "description": "Carrier retail counter price, USD; 0 when not published"
+             },
+             "delivery_days": {
+              "type": [
+               "integer",
+               "null"
+              ]
+             },
+             "delivery_window": {
+              "type": [
+               "string",
+               "null"
+              ],
+              "description": "e.g. \"2-5 business days\"; null when the carrier quoted none"
+             },
+             "delivery_estimated_date": {
+              "type": [
+               "string",
+               "null"
+              ]
+             },
+             "currency": {
+              "type": "string"
+             }
+            }
+           }
+          },
+          "dangerous_goods": {
+           "type": [
+            "object",
+            "null"
+           ]
+          },
+          "source": {
+           "type": "object",
+           "description": "Where the package estimate and the rates came from."
+          }
+         }
+        }
+       }
+      }
+     },
+     "400": {
+      "description": "invalid_json, invalid_request, missing_required_fields (with a missing array), or postal validation failure."
+     },
+     "422": {
+      "description": "product_url_not_detected — the page did not identify an item."
+     },
+     "429": {
+      "description": "rate_limited. Slow down; the same buckets cover /quote and /mcp."
+     }
+    }
+   }
+  },
+  "/agent/checkout-session": {
+   "post": {
+    "operationId": "createPaymentSession",
+    "summary": "Create a payment session for one parcel label (MPP intent \"session\")",
+    "description": "Prices the shipment live, anchors the amount to one service, and returns a handoff URL opening the SMKlog checkout prefilled with the shipment. The human confirms the contents certification and the carrier-adjustment consent there and pays on Stripe hosted checkout. This operation never charges: the agent prepares, the human pays.",
+    "x-payment-info": {
+     "intent": "session",
+     "method": "stripe",
+     "amount": "0",
+     "currency": "USD",
+     "description": "Creating the session is free. The label amount is set by the live quote in the response and paid by the human on Stripe hosted checkout behind the site consent gates; no autonomous charge is possible through this API.",
+     "offers": [
+      {
+       "intent": "session",
+       "method": "stripe",
+       "amount": null,
+       "currency": "USD",
+       "description": "Amount is set by the live quote returned in the response; null per the draft means dynamic pricing."
+      }
+     ]
+    },
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "type": "object",
+        "required": [],
+        "properties": {
+         "quote_id": {
+          "type": "string",
+          "description": "quote_id from a previous get_parcel_quote call, valid 15 minutes. When given, the shipment comes from that quote and product, from_zip, to_zip, to_country and quantity are ignored."
+         },
+         "product": {
+          "type": "string",
+          "description": "Required unless quote_id is given."
+         },
+         "from_zip": {
+          "type": "string",
+          "description": "5-digit US ZIP. Required unless quote_id is given."
+         },
+         "to_zip": {
+          "type": "string",
+          "description": "5-digit US ZIP, or the destination country's own postal code. Required unless quote_id is given."
+         },
+         "to_country": {
+          "type": "string",
+          "enum": [
+           "US",
+           "CA",
+           "GB",
+           "DE",
+           "AU"
+          ],
+          "default": "US"
+         },
+         "quantity": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Identical parcels. Default 1; more than 1 returns no session because a person prices it."
+         },
+         "service": {
+          "type": "string",
+          "description": "Optional service to anchor the amount, matched as a case-insensitive fragment of the display name; cheapest when omitted or unmatched."
+         }
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "The session: intent, method, amount, currency, service, handoff_url, session_id, note. Keep session_id for getCheckoutStatus."
+     },
+     "422": {
+      "description": "session_failed — unpriceable, restricted, or routed to human freight review."
+     },
+     "429": {
+      "description": "rate_limited — shares the quote bucket."
+     }
+    }
+   }
+  },
+  "/agent/checkout-session/{session_id}": {
+   "get": {
+    "operationId": "getCheckoutStatus",
+    "summary": "Read where a payment session stands",
+    "description": "The stage of the checkout a payment session led to: awaiting_checkout, checkout_started, paid, label_ready (with the tracking number), delivered or refunded. Reads SMKlog order records only, no carrier call. Sessions live 30 days; an unknown or expired id answers 404 session_not_found. The answer never carries names, addresses or emails.",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "pattern": "^as_[A-Za-z0-9-]{8,80}$"
+      },
+      "description": "The session_id returned by createPaymentSession."
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "session_id, status, created_at, expires_at, amount, currency, service, checkout (order_id, paid, label_ready, carrier, service, tracking_number, tracking_status, estimated_delivery, delivered_at) and next."
+     },
+     "404": {
+      "description": "session_not_found — unknown, malformed or expired session_id."
+     },
+     "429": {
+      "description": "rate_limited — 60 checks an hour per client."
+     }
+    }
+   }
+  },
+  "/status": {
+   "get": {
+    "operationId": "status",
+    "summary": "Liveness probe",
+    "responses": {
+     "200": {
+      "description": "ok"
+     }
+    }
+   }
+  }
+ },
+ "x-mcp": {
+  "transport": "streamable-http",
+  "endpoint": "https://quote-api.smklog.com/mcp",
+  "serverCard": "https://quote-api.smklog.com/.well-known/mcp/server-card.json"
+ }
+}

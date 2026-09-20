@@ -1,0 +1,62 @@
+generated: '2026-09-19'
+method: derived
+source: >-
+  openapi/smklog-com-openapi.yml — the spec declares no components.schemas; every shape is inline, and the
+  responses of createPaymentSession, getCheckoutStatus and the error responses carry descriptions but no schema,
+  so those fields are taken from the response descriptions, the MCP tool descriptions (mcp/smklog-com-tools-list.json)
+  and the provider docs, and marked as such.
+description: >-
+  A short chain: a QuoteRequest yields a Quote (quote_id, valid 15 minutes) holding up to five Rates; a Rate or
+  a fresh shipment description becomes a PaymentSession (session_id, 30 days) whose handoff URL a human pays;
+  paying creates a Checkout/Order record with a Label and a tracking number, which the MCP-only track_parcel
+  reads as a Shipment. The PriceIndex is a separate, read-only monthly dataset.
+entities:
+- name: QuoteRequest
+  source: openapi/smklog-com-openapi.yml#/paths/~1quote/post/requestBody
+  key_fields: [product | product_url, quantity, from_postal_code, to_postal_code, to_country_code (US|CA|GB|DE|AU), length_cm, width_cm, height_cm, weight_kg, package_source]
+  operations: [getParcelQuote]
+  note: 'MCP get_parcel_quote takes the same shipment in from_zip/to_zip/weight_lb/length_in/width_in/height_in — imperial on the tool, metric on the REST body.'
+- name: Quote
+  source: openapi/smklog-com-openapi.yml#/paths/~1quote/post/responses/200
+  id: quote_id
+  id_lifetime: 15 minutes (createPaymentSession.requestBody.quote_id description)
+  states: [parcel_label_ready, freight_manager, international_unsupported_online, restricted]
+  key_fields: [mode, identified_product_title, 'package {dimensions, weight, confidence, assumptions}', 'rates[]', dangerous_goods, source]
+  operations: [getParcelQuote]
+- name: Rate
+  source: openapi/smklog-com-openapi.yml#/paths/~1quote/post/responses/200 (rates.items)
+  key_fields: [carrier (USPS|UPS|FedEx|DHL), service, service_code, amount (checkout total, fee inside), retail_amount (carrier counter price or 0), delivery_days, delivery_window, delivery_estimated_date, currency]
+  docs_fields_not_in_spec: [carrier_amount, service_fee, counter_price]
+  note: 'smklog.com/api describes carrier_amount and service_fee as separate figures and the get-parcel-quote skill names counter_price; the spec schema lists only amount and retail_amount.'
+- name: PaymentSession
+  source: openapi/smklog-com-openapi.yml#/paths/~1agent~1checkout-session/post/responses/200 (description only)
+  id: session_id
+  id_format: ^as_[A-Za-z0-9-]{8,80}$
+  id_lifetime: 30 days
+  key_fields: [intent (session), method, amount, currency, service, handoff_url, session_id, note]
+  operations: [createPaymentSession]
+- name: CheckoutStatus
+  source: openapi/smklog-com-openapi.yml#/paths/~1agent~1checkout-session~1{session_id}/get/responses/200 (description only)
+  states: [awaiting_checkout, checkout_started, paid, label_ready, delivered, refunded]
+  key_fields: [session_id, status, created_at, expires_at, amount, currency, service, 'checkout {order_id, paid, label_ready, carrier, service, tracking_number, tracking_status, estimated_delivery, delivered_at}', next]
+  operations: [getCheckoutStatus]
+  privacy: never carries names, addresses or emails
+- name: Shipment
+  source: mcp/smklog-com-tools-list.json#track_parcel (MCP only)
+  id: tracking_number
+  key_fields: [status, scan events, estimated delivery date]
+  operations: []
+  note: Only labels bought on smklog.com; not a universal tracker.
+- name: PriceIndex
+  source: mcp/smklog-com-tools-list.json#get_price_index (MCP only)
+  key: month (YYYY-MM)
+  key_fields: [six boxes x five US cities, cheapest service per box and lane, every rate behind it, basket average]
+  operations: []
+relationships:
+- {from: QuoteRequest, to: Quote, type: has_one, via: 'POST /quote'}
+- {from: Quote, to: Rate, type: has_many, via: 'rates[] (up to 5)'}
+- {from: Quote, to: PaymentSession, type: has_one, via: 'quote_id -> createPaymentSession.quote_id (optional; a fresh product/from_zip/to_zip also works)'}
+- {from: Rate, to: PaymentSession, type: belongs_to, via: 'service (case-insensitive fragment of the display name; cheapest when omitted)'}
+- {from: PaymentSession, to: CheckoutStatus, type: has_one, via: 'session_id -> GET /agent/checkout-session/{session_id}'}
+- {from: CheckoutStatus, to: Shipment, type: has_one, via: 'checkout.tracking_number -> track_parcel.tracking_number (MCP)'}
+- {from: PriceIndex, to: Rate, type: has_many, via: 'the same live pricing pipeline; no id link'}

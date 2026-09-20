@@ -1,0 +1,102 @@
+generated: '2026-09-19'
+method: probed
+status: published
+source: https://quote-api.smklog.com/mcp
+deployment:
+  mode: both
+  endpoint: https://quote-api.smklog.com/mcp
+  transport: streamable-http
+  install: npx -y github:smklog/parcel-shipping-rates-mcp
+  package: https://github.com/smklog/parcel-shipping-rates-mcp
+  auth: none
+  verified: probed
+  install_note: >-
+    The stdio package is a thin bridge that forwards every JSON-RPC message to the hosted endpoint above (README:
+    "this repository is a thin stdio bridge to the same endpoint"); it is installed from GitHub with npx or built
+    with Docker, and is NOT on the npm registry (the scoped name 404s there). The remote endpoint is the product;
+    the bridge exists for clients that can only launch local commands.
+  server_card: well-known/smklog-com-mcp-server-card.json     # served at /.well-known/mcp/server-card.json
+  registry:
+    name: com.smklog/parcel-shipping-rates
+    url: https://registry.modelcontextprotocol.io/v0/servers?search=smklog
+    latest_version: 1.4.0
+    published: '2026-09-01'
+    remotes: [{type: streamable-http, url: 'https://quote-api.smklog.com/mcp'}]
+  third_party_listings:
+  - {name: Smithery, url: 'https://smithery.ai/servers/smklog/parcel-shipping-rates', status: '200 on 2026-09-19'}
+  - {name: Glama, url: 'https://glama.ai/mcp/servers/smklog/parcel-shipping-rates-mcp', status: '200 on 2026-09-19'}
+  client_configs:
+    claude_code: 'claude mcp add --transport http smklog https://quote-api.smklog.com/mcp'
+    mcp_json: '{"mcpServers": {"smklog": {"type": "http", "url": "https://quote-api.smklog.com/mcp"}}}'
+    gemini_extension: gemini-extension.json in the GitHub repo (httpUrl to the hosted endpoint, timeout 30000)
+server:
+  name: smklog-quotes
+  title: SMKlog Parcel Shipping Rates
+  version: 1.4.0
+  protocol_version: '2025-06-18'          # negotiated on initialize; the server card advertises 2026-07-28, 2025-06-18, 2025-03-26
+  transport: http
+  url: https://quote-api.smklog.com/mcp
+  website: https://smklog.com
+  capabilities:
+    tools: {listChanged: false}
+    resources: {listChanged: false}
+    prompts: {listChanged: false}
+    extensions: {io.modelcontextprotocol/tasks: {}}
+  instructions_excerpt: >-
+    "Five tools. get_parcel_quote returns live shipping rates for a single parcel sent from a US origin — inside
+    the US, or to Canada, the UK, Germany or Australia — across USPS, UPS and FedEx (plus DHL Express to Germany
+    and Australia), from a plain-words item description (or exact dimensions). create_checkout_link turns ..."
+    (full text in mcp/smklog-com-initialize.json)
+probes:
+- {url: 'https://quote-api.smklog.com/mcp', method: 'POST initialize', status: 200, file: smklog-com-initialize.json}
+- {url: 'https://quote-api.smklog.com/mcp', method: 'POST tools/list', status: 200, file: smklog-com-tools-list.json, tools: 5, note: 'result carries resultType complete, ttlMs 86400000, cacheScope public'}
+- {url: 'https://quote-api.smklog.com/mcp', method: 'POST resources/list', status: 200, file: smklog-com-resources-list.json, resources: 0}
+- {url: 'https://quote-api.smklog.com/mcp', method: 'POST prompts/list', status: 200, prompts: 0}
+- {url: 'https://quote-api.smklog.com/mcp', method: GET, status: 405, note: '{"error":"method_not_allowed","message":"POST JSON-RPC 2.0 messages to this endpoint."}'}
+- {url: 'https://quote-api.smklog.com/.well-known/mcp/server-card.json', status: 200, file: ../well-known/smklog-com-mcp-server-card.json}
+- {url: 'https://quote-api.smklog.com/.well-known/oauth-protected-resource', status: 200, note: 'authorization_required false; the MCP host is the resource server and it says so'}
+- {url: 'https://quote-api.smklog.com/.well-known/oauth-protected-resource/mcp', status: 405}
+- {url: 'https://quote-api.smklog.com/.well-known/oauth-authorization-server', status: 200}
+tools:
+- name: get_parcel_quote
+  title: Get live parcel shipping rates from a US origin
+  annotations: {readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: true}
+  input: [product, from_zip, to_zip, to_country, quantity, weight_lb, length_in, width_in, height_in]
+  required: [product, from_zip, to_zip]
+  source_operation: openapi/smklog-com-openapi.yml#getParcelQuote
+  allowance: 80 calls an hour per client, shared with the public /quote route
+  note: 'Imperial units on the tool (weight_lb, *_in); the REST body is metric. Clients declaring io.modelcontextprotocol/tasks get a durable task handle for freight/oversize review; others get a pointer to the human review page.'
+- name: create_checkout_link
+  title: Create a payment session for a shipping label
+  annotations: {readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true}
+  input: [quote_id, product, from_zip, to_zip, to_country, quantity, service]
+  required: []
+  source_operation: openapi/smklog-com-openapi.yml#createPaymentSession
+  note: '"writes a session record (30-day life ...) and is not idempotent. Calling it twice makes two sessions and, without a quote_id, spends two carrier calls. It never charges."'
+- name: get_checkout_status
+  title: Check a checkout session
+  annotations: {readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false}
+  input: [session_id]
+  required: [session_id]
+  source_operation: openapi/smklog-com-openapi.yml#getCheckoutStatus
+  allowance: 60 checks an hour per client
+- name: track_parcel
+  title: Track a SMKlog shipment
+  annotations: {readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true}
+  input: [tracking_number]
+  required: [tracking_number]
+  source_operation: null
+  note: 'MCP-only; labels bought on smklog.com only; 404 tracking_not_found otherwise; up to eight scan events newest first; spends no quote allowance.'
+- name: get_price_index
+  title: US parcel shipping price index
+  annotations: {readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false}
+  input: [month]
+  required: []
+  source_operation: null
+  note: 'MCP-only; monthly issues from 2026-07 onward; issue_not_found returns available_months; spends no quote allowance.'
+resources: []
+prompts: []
+notes:
+- Full inputSchema and description text for every tool is preserved verbatim in mcp/smklog-com-tools-list.json.
+- The provider states the same tools register in-browser via WebMCP (navigator.modelContext) on smklog.com pages; the homepage HTML fetched 2026-09-19 carries no modelContext reference, so that claim is recorded in conformance/ as stated, not observed.
+- Payments never happen over MCP — create_checkout_link is an MPP "session" intent that hands a URL to a human.

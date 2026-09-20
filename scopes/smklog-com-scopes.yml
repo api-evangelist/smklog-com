@@ -1,0 +1,41 @@
+generated: '2026-09-19'
+method: searched
+source: https://quote-api.smklog.com/.well-known/oauth-authorization-server
+docs: https://smklog.com/auth.md
+sources:
+- https://quote-api.smklog.com/.well-known/oauth-authorization-server
+- https://smklog.com/.well-known/oauth-authorization-server
+- https://quote-api.smklog.com/.well-known/oauth-protected-resource
+- https://smklog.com/auth.md
+description: >-
+  The OpenAPI declares no securitySchemes (0-working/derive-oauth-scopes.py found nothing to derive), because the
+  API is open; OAuth exists only as an optional rate-limit tier. The RFC 8414 metadata publishes one scope,
+  quote, one grant (client_credentials) and two token-endpoint auth methods. Registration is manual by email;
+  there is no authorization endpoint, no user identity and no dynamic client registration.
+schemes:
+- name: SMKlog client_credentials
+  type: oauth2
+  source: https://quote-api.smklog.com/.well-known/oauth-authorization-server
+  issuer: https://quote-api.smklog.com
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://quote-api.smklog.com/oauth/token
+    token_endpoint_auth_methods: [client_secret_basic, client_secret_post]
+    scopes: {quote: 'Raise the per-client hourly quote bucket on POST /quote (and the shared MCP bucket)'}
+  token:
+    format: opaque bearer, prefix smk_at_
+    lifetime: one hour (auth.md)
+    bearer_methods: [header]
+  registration:
+    method: manual_email
+    uri: mailto:info@smklog.com
+    dynamic_client_registration: false
+    note: '"credentials are issued manually and the secret is shown exactly once" — auth.md'
+  revocation: 'operator-initiated by email; "existing tokens die with the client" — auth.md'
+scopes:
+- scope: quote
+  description: The only published scope. Grants a dedicated hourly rate-limit bucket for quoting; it adds no user identity and no payment powers ("purchases still happen on smklog.com behind the human consent gates, whoever holds the token").
+  flows: [clientCredentials]
+  sources: [https://quote-api.smklog.com/.well-known/oauth-authorization-server, https://smklog.com/auth.md]
+observed:
+- 'POST /oauth/token grant_type=client_credentials without credentials -> 401 {"error":"invalid_client"} (2026-09-19)'

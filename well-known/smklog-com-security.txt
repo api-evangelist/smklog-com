@@ -1,0 +1,24 @@
+# Security contact for smklog.com — RFC 9116.
+#
+# If you found something, mail the address below. Plain text is fine and there
+# is no form to fill in. We read it.
+#
+# On money, so that nobody spends a letter asking: we do not run a bug bounty
+# and we do not pay for vulnerability reports. That is not a negotiating
+# position, it is the size of the company. Send the finding anyway if you have
+# one; we fix what is real.
+#
+# What helps: the exact URL or endpoint, what you sent, what came back, and
+# whether you needed credentials. A single request that demonstrates the problem
+# is worth more than a scanner report.
+#
+# What to please avoid: load testing, denial of service, and anything that
+# touches a real customer's order or address data. This is a live logistics
+# service with real shipments in it. If a proof needs customer data to
+# demonstrate, describe the path instead of running it and we will reproduce it
+# ourselves.
+
+Contact: mailto:info@smklog.com
+Expires: 2027-07-29T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://smklog.com/.well-known/security.txt

@@ -1,0 +1,60 @@
+generated: '2026-09-19'
+method: derived
+source: >-
+  Derived by aligning the live MCP tools/list (5 tools, fetched anonymously 2026-09-19, saved verbatim in
+  mcp/smklog-com-tools-list.json) with the provider's own OpenAPI 3.1.0 (openapi/smklog-com-openapi.yml, 4
+  operations) and the A2A agent card (2 skills). All three surfaces report version 1.4.0 and the OpenAPI carries
+  an x-mcp block pointing at the same endpoint, so the bindings are first-party and high confidence.
+purpose: >-
+  Bind each MCP tool to the REST operation that backs it, expose where the two surfaces diverge (two MCP-only
+  tools, one REST-only liveness probe, and a units/field-name split between the tool and the REST body), and tie
+  the two A2A skills to the same operations.
+surfaces:
+  rest_openapi: openapi/smklog-com-openapi.yml            # 4 operations; verbatim source in openapi/_original/
+  mcp: https://quote-api.smklog.com/mcp                   # tools/list, initialize, resources/list, prompts/list all open (no auth)
+  a2a: https://quote-api.smklog.com/a2a                   # JSON-RPC, stateless message/send; skills get_parcel_quote + create_checkout_link
+  graphql: none
+crosswalk:
+- tool: get_parcel_quote
+  category: quotes
+  rest: [getParcelQuote]
+  binding: rest
+  confidence: high
+  a2a_skill: get_parcel_quote
+  note: >-
+    Same capability, different field names and units: the tool takes from_zip/to_zip/to_country/weight_lb/
+    length_in/width_in/height_in; the REST body takes from_postal_code/to_postal_code/to_country_code/weight_kg/
+    length_cm/width_cm/height_cm (+ product_url and package_source, which the tool lacks). The tool's "all four
+    dimensions or none" rule mirrors the REST description. The tool returns quote_id for reuse; the spec's 200
+    schema does not list quote_id, though createPaymentSession.requestBody documents it.
+- tool: create_checkout_link
+  category: checkout
+  rest: [createPaymentSession]
+  binding: rest
+  confidence: high
+  a2a_skill: create_checkout_link
+  note: Field names match the REST body exactly (quote_id, product, from_zip, to_zip, to_country, quantity, service) — this operation was written MCP-first.
+- tool: get_checkout_status
+  category: checkout
+  rest: [getCheckoutStatus]
+  binding: rest
+  confidence: high
+  note: session_id path parameter = tool input; identical ^as_[A-Za-z0-9-]{8,80}$ pattern on both.
+mcp_only:
+- tool: track_parcel
+  reason: No REST tracking operation is published; shipment status for labels bought on smklog.com is readable only through the MCP tool (or the human tracking page at https://smklog.com/tracking).
+- tool: get_price_index
+  reason: The monthly parcel price index is served as an MCP tool and as HTML pages (https://smklog.com/lp/parcel-price-index); no REST operation exists.
+rest_only:
+- capability: operations
+  operations: [status]
+  reason: 'GET /status is a liveness probe ({"ok":true,"service","version","time"}), linked from the RFC 9727 api-catalog as the status relation; not a tool.'
+coverage:
+  tools_named: 5
+  tools_bound: 3
+  mcp_only: 2
+  rest_operations_total: 4
+  rest_operations_with_tool: 3
+  rest_only: 1
+  a2a_skills: 2
+  a2a_skills_bound: 2

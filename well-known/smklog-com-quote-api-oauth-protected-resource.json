@@ -1,0 +1,15 @@
+{
+ "resource": "https://quote-api.smklog.com",
+ "authorization_servers": [
+  "https://quote-api.smklog.com"
+ ],
+ "scopes_supported": [
+  "quote"
+ ],
+ "bearer_methods_supported": [
+  "header"
+ ],
+ "authorization_required": false,
+ "authorization_note": "Quoting, tracking and the price index are open with no token. Credentials only raise the per-client rate limit; see https://smklog.com/auth.md.",
+ "resource_documentation": "https://smklog.com/api"
+}
