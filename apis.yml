@@ -22,6 +22,17 @@ tags:
 - Shipping
 - Logistics
 - Parcel Shipping
+- shipping-rates
+- Shipping Labels
+- E-Commerce
+- Agents
+- MCP
+- A2A
+tags_raw:
+- Company
+- Shipping
+- Logistics
+- Parcel Shipping
 - Shipping Rates
 - Shipping Labels
 - Ecommerce
@@ -43,6 +54,14 @@ apis:
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
+  - Shipping
+  - shipping-rates
+  - Parcel Shipping
+  - Checkout
+  - Logistics
+  - MCP
+  - A2A
+  tags_raw:
   - Shipping
   - Shipping Rates
   - Parcel Shipping
