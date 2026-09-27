@@ -1,0 +1,111 @@
+openapi: 3.2.0
+info:
+  title: Smklog Com Agent API
+  version: 1.4.0
+  contact:
+    name: SMKlog
+    email: info@smklog.com
+    url: https://smklog.com/api
+  termsOfService: https://smklog.com/terms
+  description: 'Operations tagged Agent across 2 of this provider''s published API definitions: smklog-com-quote-api-openapi.json, smklog-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://quote-api.smklog.com
+tags:
+- name: Agent
+paths:
+  /agent/checkout-session:
+    post:
+      operationId: createPaymentSession
+      summary: Create a payment session for one parcel label (MPP intent "session")
+      description: 'Prices the shipment live, anchors the amount to one service, and returns a handoff URL opening the SMKlog checkout prefilled with the shipment. The human confirms the contents certification and the carrier-adjustment consent there and pays on Stripe hosted checkout. This operation never charges: the agent prepares, the human pays.'
+      x-payment-info:
+        intent: session
+        method: stripe
+        amount: '0'
+        currency: USD
+        description: Creating the session is free. The label amount is set by the live quote in the response and paid by the human on Stripe hosted checkout behind the site consent gates; no autonomous charge is possible through this API.
+        offers:
+        - intent: session
+          method: stripe
+          amount: null
+          currency: USD
+          description: Amount is set by the live quote returned in the response; null per the draft means dynamic pricing.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: []
+              properties:
+                quote_id:
+                  type: string
+                  description: quote_id from a previous get_parcel_quote call, valid 15 minutes. When given, the shipment comes from that quote and product, from_zip, to_zip, to_country and quantity are ignored.
+                product:
+                  type: string
+                  description: Required unless quote_id is given.
+                from_zip:
+                  type: string
+                  description: 5-digit US ZIP. Required unless quote_id is given.
+                to_zip:
+                  type: string
+                  description: 5-digit US ZIP, or the destination country's own postal code. Required unless quote_id is given.
+                to_country:
+                  type: string
+                  enum:
+                  - US
+                  - CA
+                  - GB
+                  - DE
+                  - AU
+                  default: US
+                quantity:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                  description: Identical parcels. Default 1; more than 1 returns no session because a person prices it.
+                service:
+                  type: string
+                  description: Optional service to anchor the amount, matched as a case-insensitive fragment of the display name; cheapest when omitted or unmatched.
+      responses:
+        '200':
+          description: 'The session: intent, method, amount, currency, service, handoff_url, session_id, note. Keep session_id for getCheckoutStatus.'
+        '422':
+          description: session_failed — unpriceable, restricted, or routed to human freight review.
+        '429':
+          description: rate_limited — shares the quote bucket.
+      tags:
+      - Agent
+    servers:
+    - url: https://quote-api.smklog.com
+  /agent/checkout-session/{session_id}:
+    get:
+      operationId: getCheckoutStatus
+      summary: Read where a payment session stands
+      description: 'The stage of the checkout a payment session led to: awaiting_checkout, checkout_started, paid, label_ready (with the tracking number), delivered or refunded. Reads SMKlog order records only, no carrier call. Sessions live 30 days; an unknown or expired id answers 404 session_not_found. The answer never carries names, addresses or emails.'
+      parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^as_[A-Za-z0-9-]{8,80}$
+        description: The session_id returned by createPaymentSession.
+      responses:
+        '200':
+          description: session_id, status, created_at, expires_at, amount, currency, service, checkout (order_id, paid, label_ready, carrier, service, tracking_number, tracking_status, estimated_delivery, delivered_at) and next.
+        '404':
+          description: session_not_found — unknown, malformed or expired session_id.
+        '429':
+          description: rate_limited — 60 checks an hour per client.
+      tags:
+      - Agent
+    servers:
+    - url: https://quote-api.smklog.com
+x-refined-from:
+- smklog-com-quote-api-openapi.json
+- smklog-com-openapi.yml
+x-mcp:
+  transport: streamable-http
+  endpoint: https://quote-api.smklog.com/mcp
+  serverCard: https://quote-api.smklog.com/.well-known/mcp/server-card.json

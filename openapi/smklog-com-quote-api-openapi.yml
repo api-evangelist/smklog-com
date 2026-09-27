@@ -1,0 +1,143 @@
+openapi: 3.2.0
+info:
+  title: Smklog Com Quote API
+  version: 1.4.0
+  contact:
+    name: SMKlog
+    email: info@smklog.com
+    url: https://smklog.com/api
+  termsOfService: https://smklog.com/terms
+  description: 'Operations tagged Quote across 2 of this provider''s published API definitions: smklog-com-quote-api-openapi.json, smklog-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://quote-api.smklog.com
+tags:
+- name: Quote
+paths:
+  /quote:
+    post:
+      operationId: getParcelQuote
+      summary: Price one parcel from a US origin across USPS, UPS and FedEx (plus DHL Express…
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - quantity
+              - from_postal_code
+              - to_postal_code
+              properties:
+                product:
+                  type: string
+                  description: Plain-words item description, e.g. "Yamaha FG800 acoustic guitar in a hard case". Required unless product_url is given. Drives the box and weight estimate when dimensions are omitted.
+                product_url:
+                  type: string
+                  description: Store product page URL; the item is identified from the page. Alternative to product.
+                quantity:
+                  type: integer
+                  minimum: 1
+                  default: 1
+                  description: Identical parcels. 1 is priced online; more routes the request to a person (mode freight_manager, empty rates).
+                from_postal_code:
+                  type: string
+                  description: 5-digit US ZIP; the origin is always in the United States.
+                to_postal_code:
+                  type: string
+                  description: 5-digit US ZIP when to_country_code is US or omitted; otherwise the destination country's own postal code.
+                to_country_code:
+                  type: string
+                  enum:
+                  - US
+                  - CA
+                  - GB
+                  - DE
+                  - AU
+                  default: US
+                  description: 'Destination country. Sold online: US, CA, GB, DE, AU; any other answers mode international_unsupported_online with no rates.'
+                length_cm:
+                  type: number
+                  description: Packed box length. Supply all four of length_cm, width_cm, height_cm, weight_kg to skip the estimate.
+                width_cm:
+                  type: number
+                height_cm:
+                  type: number
+                weight_kg:
+                  type: number
+                  description: Packed weight, kg. Online pricing stops at 68 kg (150 lb), 274 cm (108 in) on the longest side and 419 cm (165 in) of length plus girth; beyond that the response is mode freight_manager.
+                package_source:
+                  type: string
+                  description: Set to "manual" when supplying exact dimensions.
+      responses:
+        '200':
+          description: Priced (mode parcel_label_ready, up to 5 rates), routed to a human (mode freight_manager, empty rates — palletized, crated or oversized shipments are priced by a person), or restricted (empty rates with an explanation).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mode:
+                    type: string
+                  identified_product_title:
+                    type: string
+                  package:
+                    type: object
+                    description: 'The packed box used for pricing: dimensions, weight, confidence, assumptions.'
+                  rates:
+                    type: array
+                    items:
+                      type: object
+                      description: 'One purchasable service. Two prices are returned and they are not interchangeable: amount is the checkout total a customer pays, with the SMKlog fee inside it (the fee is itemized only on the checkout receipt), and retail_amount is the carrier’s own counter price for the same parcel where the carrier publishes one (0 where it does not).'
+                      properties:
+                        carrier:
+                          type: string
+                          description: USPS, UPS, FedEx or DHL
+                        service:
+                          type: string
+                        service_code:
+                          type: string
+                        amount:
+                          type: number
+                          description: Checkout total, USD, SMKlog fee inside
+                        retail_amount:
+                          type: number
+                          description: Carrier retail counter price, USD; 0 when not published
+                        delivery_days:
+                          type:
+                          - integer
+                          - 'null'
+                        delivery_window:
+                          type:
+                          - string
+                          - 'null'
+                          description: e.g. "2-5 business days"; null when the carrier quoted none
+                        delivery_estimated_date:
+                          type:
+                          - string
+                          - 'null'
+                        currency:
+                          type: string
+                  dangerous_goods:
+                    type:
+                    - object
+                    - 'null'
+                  source:
+                    type: object
+                    description: Where the package estimate and the rates came from.
+        '400':
+          description: invalid_json, invalid_request, missing_required_fields (with a missing array), or postal validation failure.
+        '422':
+          description: product_url_not_detected — the page did not identify an item.
+        '429':
+          description: rate_limited. Slow down; the same buckets cover /quote and /mcp.
+      tags:
+      - Quote
+    servers:
+    - url: https://quote-api.smklog.com
+x-refined-from:
+- smklog-com-quote-api-openapi.json
+- smklog-com-openapi.yml
+x-mcp:
+  transport: streamable-http
+  endpoint: https://quote-api.smklog.com/mcp
+  serverCard: https://quote-api.smklog.com/.well-known/mcp/server-card.json

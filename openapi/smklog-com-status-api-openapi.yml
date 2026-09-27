@@ -1,0 +1,33 @@
+openapi: 3.2.0
+info:
+  title: Smklog Com Status API
+  version: 1.4.0
+  contact:
+    name: SMKlog
+    email: info@smklog.com
+    url: https://smklog.com/api
+  termsOfService: https://smklog.com/terms
+  description: 'Operations tagged Status across 2 of this provider''s published API definitions: smklog-com-quote-api-openapi.json, smklog-com-openapi.yml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: https://quote-api.smklog.com
+tags:
+- name: Status
+paths:
+  /status:
+    get:
+      operationId: status
+      summary: Liveness probe
+      responses:
+        '200':
+          description: ok
+      tags:
+      - Status
+    servers:
+    - url: https://quote-api.smklog.com
+x-refined-from:
+- smklog-com-quote-api-openapi.json
+- smklog-com-openapi.yml
+x-mcp:
+  transport: streamable-http
+  endpoint: https://quote-api.smklog.com/mcp
+  serverCard: https://quote-api.smklog.com/.well-known/mcp/server-card.json

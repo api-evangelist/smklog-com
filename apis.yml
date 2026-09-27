@@ -40,49 +40,22 @@ tags_raw:
 - MCP
 - A2A
 apis:
-- name: SMKlog Quote API
-  description: 'Live parcel shipping rates and agent-prepared checkout for one parcel sent from a US origin.
-    Four operations: POST /quote prices an item described in plain words (or by product URL) across USPS,
-    UPS, FedEx and DHL Express, estimating the packed box when dimensions are omitted and returning up to five
-    purchasable services with the checkout total, the carrier counter price and the delivery window; POST
-    /agent/checkout-session creates a payment session (MPP intent "session") and a handoff URL where a human
-    confirms consents and pays on Stripe hosted checkout; GET /agent/checkout-session/{session_id} reports
-    whether the human paid and whether the label exists; GET /status is a liveness probe. No key is required;
-    requests are rate limited per client (about 80 quotes an hour, shared with the MCP endpoint) and an
-    optional OAuth 2.0 client_credentials token, issued manually, raises the bucket.'
-  image: https://smklog.com/assets/icon-512.png
+- aid: smklog-com:smklog-com-agent-api
+  name: SMKlog Agent API
+  description: The Agent API from SMKlog — 2 operation(s) for agent.
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
-  - Shipping
-  - shipping-rates
-  - Parcel Shipping
-  - Checkout
-  - Logistics
-  - MCP
-  - A2A
-  tags_raw:
-  - Shipping
-  - Shipping Rates
-  - Parcel Shipping
-  - Checkout
-  - Logistics
-  - MCP
-  - A2A
+  - Agent
   properties:
   - type: OpenAPI
-    url: openapi/smklog-com-openapi.yml
-  - type: OpenAPI
-    name: Provider-hosted OpenAPI 3.1.0 (verbatim source in openapi/_original/)
-    url: https://quote-api.smklog.com/openapi.json
+    url: openapi/smklog-com-agent-api-openapi.yml
   - type: Documentation
     url: https://smklog.com/api
   - type: APIReference
     url: https://quote-api.smklog.com/openapi.json
   - type: GettingStarted
     url: https://smklog.com/repack-line
-  - type: MCPServer
-    url: mcp/smklog-com-mcp.yml
   - type: ToolCrosswalk
     url: mcp/smklog-com-tool-crosswalk.yml
   - type: Authentication
@@ -103,8 +76,82 @@ apis:
     url: plans/smklog-com-plans-pricing.yml
   - type: DataModel
     url: data-model/smklog-com-data-model.yml
-  - type: Overlay
-    url: overlays/smklog-com-quote-api-overlay.yaml
+  - type: ChangeLog
+    url: changelog/smklog-com-changelog.yml
+- aid: smklog-com:smklog-com-quote-api
+  name: SMKlog Quote API
+  description: The Quote API from SMKlog — 1 operation(s) for quote.
+  humanURL: https://smklog.com/api
+  baseURL: https://quote-api.smklog.com
+  tags:
+  - Quote
+  properties:
+  - type: OpenAPI
+    url: openapi/smklog-com-quote-api-openapi.yml
+  - type: Documentation
+    url: https://smklog.com/api
+  - type: APIReference
+    url: https://quote-api.smklog.com/openapi.json
+  - type: GettingStarted
+    url: https://smklog.com/repack-line
+  - type: ToolCrosswalk
+    url: mcp/smklog-com-tool-crosswalk.yml
+  - type: Authentication
+    url: authentication/smklog-com-authentication.yml
+  - type: OAuthScopes
+    url: scopes/smklog-com-scopes.yml
+  - type: Conventions
+    url: conventions/smklog-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/smklog-com-problem-types.yml
+  - type: Lifecycle
+    url: lifecycle/smklog-com-lifecycle.yml
+  - type: Conformance
+    url: conformance/smklog-com-conformance.yml
+  - type: RateLimits
+    url: rate-limits/smklog-com-rate-limits.yml
+  - type: Plans
+    url: plans/smklog-com-plans-pricing.yml
+  - type: DataModel
+    url: data-model/smklog-com-data-model.yml
+  - type: ChangeLog
+    url: changelog/smklog-com-changelog.yml
+- aid: smklog-com:smklog-com-status-api
+  name: SMKlog Status API
+  description: The Status API from SMKlog — 1 operation(s) for status.
+  humanURL: https://smklog.com/api
+  baseURL: https://quote-api.smklog.com
+  tags:
+  - Status
+  properties:
+  - type: OpenAPI
+    url: openapi/smklog-com-status-api-openapi.yml
+  - type: Documentation
+    url: https://smklog.com/api
+  - type: APIReference
+    url: https://quote-api.smklog.com/openapi.json
+  - type: GettingStarted
+    url: https://smklog.com/repack-line
+  - type: ToolCrosswalk
+    url: mcp/smklog-com-tool-crosswalk.yml
+  - type: Authentication
+    url: authentication/smklog-com-authentication.yml
+  - type: OAuthScopes
+    url: scopes/smklog-com-scopes.yml
+  - type: Conventions
+    url: conventions/smklog-com-conventions.yml
+  - type: ErrorCatalog
+    url: errors/smklog-com-problem-types.yml
+  - type: Lifecycle
+    url: lifecycle/smklog-com-lifecycle.yml
+  - type: Conformance
+    url: conformance/smklog-com-conformance.yml
+  - type: RateLimits
+    url: rate-limits/smklog-com-rate-limits.yml
+  - type: Plans
+    url: plans/smklog-com-plans-pricing.yml
+  - type: DataModel
+    url: data-model/smklog-com-data-model.yml
   - type: ChangeLog
     url: changelog/smklog-com-changelog.yml
 maintainers:
@@ -113,6 +160,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/smklog-com-quote-api-overlay.yaml
 - type: VulnerabilityDisclosure
   url: security/smklog-com-vulnerability-disclosure.yml
 - type: Website
@@ -165,3 +214,10 @@ x-enrichment:
   status: enriched
   artifacts_added: 38
   pass: local-v3
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://smklog.com/.well-known/agent-card.json"
+  grade: "flavored"
+  protocol_version: "1.0"
+  control: 404
