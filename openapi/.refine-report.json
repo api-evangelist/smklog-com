@@ -1,29 +1,19 @@
 {
   "provider": "smklog-com",
   "sources": [
-    "_original/smklog-com-quote-api-openapi.json",
-    "smklog-com-openapi.yml"
+    "_original/smklog-com-openapi.yml"
   ],
   "outputs": [
     "smklog-com-agent-api-openapi.yml",
     "smklog-com-quote-api-openapi.yml",
     "smklog-com-status-api-openapi.yml"
   ],
-  "archived": [
-    "archived openapi/smklog-com-openapi.yml"
-  ],
+  "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
+    "1 archived document(s) dropped as subsets of other archived documents",
     "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
-    "smklog-com-quote-api-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "smklog-com-quote-api-openapi.json: tagged paths POST /quote -> Quote",
-    "smklog-com-quote-api-openapi.json: tagged paths POST /agent/checkout-session -> Agent",
-    "smklog-com-quote-api-openapi.json: tagged paths GET /agent/checkout-session/{session_id} -> Agent",
-    "smklog-com-quote-api-openapi.json: tagged paths GET /status -> Status",
-    "smklog-com-quote-api-openapi.json: declared missing tag: Agent",
-    "smklog-com-quote-api-openapi.json: declared missing tag: Quote",
-    "smklog-com-quote-api-openapi.json: declared missing tag: Status",
     "smklog-com-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
     "smklog-com-openapi.yml: tagged paths POST /quote -> Quote",
     "smklog-com-openapi.yml: tagged paths POST /agent/checkout-session -> Agent",
@@ -32,10 +22,12 @@
     "smklog-com-openapi.yml: declared missing tag: Agent",
     "smklog-com-openapi.yml: declared missing tag: Quote",
     "smklog-com-openapi.yml: declared missing tag: Status",
-    "tag 'Agent' spans 2 source specs (smklog-com-quote-api-openapi.json, smklog-com-openapi.yml): per-path servers applied",
-    "tag 'Quote' spans 2 source specs (smklog-com-quote-api-openapi.json, smklog-com-openapi.yml): per-path servers applied",
-    "tag 'Status' spans 2 source specs (smklog-com-quote-api-openapi.json, smklog-com-openapi.yml): per-path servers applied",
-    "apis.yml register: written (+3 apis, 3 total)"
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "_original/smklog-com-quote-api-openapi.json: archived document superseded by a larger archived document",
+    "smklog-com-agent-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "smklog-com-quote-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "smklog-com-status-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
