@@ -46,6 +46,8 @@ apis:
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
+  - Agents
+  tags_raw:
   - Agent
   properties:
   - type: OpenAPI
@@ -84,6 +86,8 @@ apis:
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
+  - Quotes
+  tags_raw:
   - Quote
   properties:
   - type: OpenAPI
