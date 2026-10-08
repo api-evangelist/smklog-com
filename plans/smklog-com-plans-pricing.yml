@@ -73,3 +73,29 @@ plans:
 notes:
 - 'Label purchases are pay-per-label on every plan ("All plans buy real labels from real carriers"); the checkout amount returned by the API is "the complete checkout total with the SMKlog fee inside; the fee is itemized only on the checkout receipt".'
 - 'Optional shipping protection is a separate per-label price during a US-domestic pilot capped at $500 declared value (https://smklog.com/insurance, last updated 2026-06-15).'
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - subscription
+  units: []
+  plans:
+  - name: Free
+    access: other
+    model: free
+    model_how: derived
+    units: []
+    periods: []
+  - name: Pro
+    access: other
+    model: subscription
+    model_how: derived
+    units: []
+    periods: []
+  - name: Business
+    access: other
+    model: subscription
+    model_how: derived
+    units: []
+    periods: []
