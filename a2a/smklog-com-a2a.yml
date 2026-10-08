@@ -1,67 +1,77 @@
-generated: '2026-09-19'
+generated: '2026-10-08'
 method: probed
 source: https://smklog.com/.well-known/agent-card.json
 discovery:
   path: /.well-known/agent-card.json
   canonical: true
   host: smklog.com
-  also_served_on: https://quote-api.smklog.com/.well-known/agent-card.json   # byte-identical body, HTTP 200
-  legacy_path: '/.well-known/agent.json — 404 on smklog.com, 405 on quote-api.smklog.com'
+  also_served_on: https://quote-api.smklog.com/.well-known/agent-card.json   # same JSON, HTTP 200
+  legacy_path: '/.well-known/agent.json — 404 on smklog.com, 405 on quote-api.smklog.com (2026-09-19)'
   registry_listing: 'a2aregistry.org (fetched 2026-09-19; author "SMKlog", agent "SMKlog Parcel Quotes"); the harvest record cited https://www.smklog.com/.well-known/agent-card.json, which 301s to the apex'
 conformance:
   spec: A2A 1.0.0
-  grade: flavored
-  grade_source: 'computed by network/scripts/lib_agent_card.grade_agent_card on 2026-09-19 -> (flavored, [no-protocolVersion])'
-  protocol_version: 0.3.0        # declared per interface in supportedInterfaces[0].protocolVersion, not at the top level
-  preferred_transport: null      # supportedInterfaces[0].protocolBinding is JSONRPC
+  grade: conformant
+  grade_source: 'computed by network/scripts/lib_agent_card.grade_agent_card on 2026-10-08 -> (conformant, [], [])'
+  protocol_version: '1.0'        # declared per interface in supportedInterfaces[0].protocolVersion, as A2A 1.0 places it
+  preferred_transport: JSONRPC   # supportedInterfaces[0].protocolBinding; the first entry is the preferred interface
   checks:
     capabilities_is_object: true
-    protocol_version_present_top_level: false
     protocol_version_in_supported_interfaces: true
+    supported_interfaces_entries_complete: true   # url + protocolBinding + protocolVersion
     skills_is_array: true
-    url_present_top_level: false
-    preferred_transport_present: false
     default_input_modes_present: true
     default_output_modes_present: true
-  deviations:
-  - no-protocolVersion                     # the hard check that sets the grade
-  - no-top-level-url                       # the endpoint is carried only in supportedInterfaces[0].url
-  - supportedInterfaces-instead-of-preferredTransport-and-url
+    signed: true
+  deviations: []
   note: >-
-    The card uses the supportedInterfaces[] shape (url + protocolBinding + protocolVersion per interface) with
-    nothing at the top level, so the mechanical A2A 1.0.0 checks fail on protocolVersion. The interface itself
-    declares protocolVersion 0.3.0 over JSON-RPC, capabilities is a proper object and skills a proper array; the
-    grade records the structure, not the endpoint, which is live.
+    A2A 1.0.0 layout (spec 4.4.1 / 4.4.6): no top-level url, preferredTransport or protocolVersion; the endpoint, binding and
+    version are carried by supportedInterfaces[]. The 2026-09-19 capture of this manifest graded it with the 0.3 rules and recorded
+    no-protocolVersion, no-top-level-url and supportedInterfaces-instead-of-preferredTransport-and-url; those were checks the 1.0
+    specification does not make, and were removed on the provider's correction request (2026-10-07).
 card:
   name: SMKlog Parcel Quotes
-  url: https://quote-api.smklog.com/a2a
+  url: https://quote-api.smklog.com/a2a   # supportedInterfaces[0].url
   version: 1.4.0
   provider:
     organization: SMKlog
     url: https://smklog.com
   documentation_url: https://smklog.com/api
   capabilities: {streaming: false, pushNotifications: false}
+  security_requirements: []
   default_input_modes: [application/json, text/plain]
   default_output_modes: [application/json, text/plain]
-  skills: 2
-  skill_ids: [get_parcel_quote, create_checkout_link]
+  skills: 3
+  skill_ids: [get_parcel_quote, create_checkout_link, get_checkout_status]
   file: smklog-com-agent-card.json
+signature:
+  format: JWS (ES256), signatures[] on the card
+  kid: smklog-a2a-2026-09
+  jku: https://smklog.com/.well-known/jwks.json
+  verified: true
+  method: 'ES256 over the RFC 8785 (JCS) canonical card without signatures[], with the published P-256 key; checked 2026-10-08'
 endpoint_probe:
   url: https://quote-api.smklog.com/a2a
-  request: 'POST JSON-RPC 2.0 tasks/get {id: ae-probe-nonexistent}'
-  http_status: 200
-  body: '{"jsonrpc":"2.0","id":1,"error":{"code":-32001,"message":"Task not found: this agent answers stateless messages and creates no tasks."}}'
-  get_status: '405 {"error":"method_not_allowed","message":"POST JSON-RPC 2.0 messages to this endpoint."}'
+  probed: '2026-10-08'
+  requests:
+  - request: 'POST JSON-RPC 2.0 tasks/get {id: ae-probe-nonexistent} (A2A 0.3 method name)'
+    http_status: 200
+    body: '{"jsonrpc":"2.0","id":1,"error":{"code":-32001,"message":"Task not found: this agent answers stateless messages and creates no tasks."}}'
+  - request: 'POST JSON-RPC 2.0 GetTask {id: ae-probe-nonexistent} (A2A 1.0 method name)'
+    http_status: 200
+    body: '{"jsonrpc":"2.0","id":2,"error":{"code":-32001,"message":"Task not found: this agent answers stateless messages and creates no tasks."}}'
+  - request: 'POST JSON-RPC 2.0 NoSuchMethod (negative control)'
+    http_status: 200
+    body: '{"jsonrpc":"2.0","id":3,"error":{"code":-32601,"message":"Method not found: NoSuchMethod"}}'
   note: >-
-    The endpoint is live and speaks JSON-RPC 2.0; the agent is stateless (message/send answers in one round trip,
-    no tasks). No message/send was issued because every quote is a live carrier call the provider asks agents not to
-    spend needlessly.
+    The endpoint is live and answers both the 0.3 and 1.0 JSON-RPC method names; an unknown method is refused with -32601, so the
+    two answers are real. The agent is stateless (one round trip, no tasks). No message was sent, because every quote is a live
+    carrier call the provider asks agents not to spend needlessly.
 x-evidence:
-  fetched: '2026-09-19'
+  fetched: '2026-10-08'
   url: https://smklog.com/.well-known/agent-card.json
   http_status: 200
   content_type: application/json
-  bytes: 2644
+  bytes: 3794
 notes:
-- The two skills map one-to-one onto the MCP tools get_parcel_quote and create_checkout_link and onto the REST operations getParcelQuote and createPaymentSession (see mcp/smklog-com-tool-crosswalk.yml); the DataPart field names on the card (from_zip, to_zip, weight_lb, length_in) follow the MCP surface, not the REST body (from_postal_code, weight_kg, length_cm).
-- The card states the agent "never moves money" — create_checkout_link returns a handoff URL a human completes on smklog.com.
+- The three skills map onto the MCP tools and REST operations (see mcp/smklog-com-tool-crosswalk.yml); get_checkout_status is new since the 2026-09-19 capture. The DataPart field names on the card (from_zip, to_zip, weight_lb, length_in) follow the MCP surface, not the REST body (from_postal_code, weight_kg, length_cm).
+- The card states the agent "never moves money" — create_checkout_link prepares a payment session a human completes on smklog.com.

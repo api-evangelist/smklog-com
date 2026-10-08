@@ -16,7 +16,7 @@ x-tier: profiled
 x-tier-reason: full-pipeline enrichment 2026-09-19 from the live smklog.com and quote-api.smklog.com surface
 specificationVersion: '0.20'
 created: '2026-09-19'
-modified: '2026-10-06'
+modified: '2026-10-08'
 tags:
 - Company
 - Shipping
@@ -222,8 +222,23 @@ x-enrichment:
   pass: local-v3
 x-a2a:
   verified: true
-  probed: '2026-09-26'
+  probed: '2026-10-08'
   url: "https://smklog.com/.well-known/agent-card.json"
-  grade: "flavored"
+  grade: "conformant"
   protocol_version: "1.0"
   control: 404
+x-correction-request:
+  requested: '2026-10-07'
+  source:
+  - _messages/2026-10/2026-10-07-fastmail-38773-a2a-card-check-on-apisioa2asmklog-com-applies-v03.md
+  request: 'Dmitrii Timin (ceo@smklog.com), 2026-10-07: https://apis.io/a2a/smklog-com shows "Agent card, not A2A" with no-protocolVersion,
+    no-top-level-url and supportedInterfaces-instead-of-preferredTransport-and-url -- 0.3 rules applied to an A2A 1.0 card (spec 4.4.1,
+    4.4.6: no top-level url/preferredTransport/protocolVersion; supportedInterfaces[] carries url, protocolBinding, protocolVersion). The
+    page is built from a 2026-09-19 copy; the live card has three skills, declares 1.0 and is JWS-signed. Re-capture and fix the check.'
+  applied: '2026-10-08'
+  applied_note: 'Verified live 2026-10-08: card 200 application/json on smklog.com (same JSON on quote-api.smklog.com), version 1.4.0,
+    supportedInterfaces[0] {url https://quote-api.smklog.com/a2a, protocolBinding JSONRPC, protocolVersion 1.0}, 3 skills, ES256 JWS
+    signature verifies against https://smklog.com/.well-known/jwks.json (kid smklog-a2a-2026-09) over the JCS-canonical card; the endpoint
+    answers both tasks/get (0.3) and GetTask (1.0) with a JSON-RPC -32001. Re-captured the card verbatim and rewrote a2a/smklog-com-a2a.yml:
+    lib_agent_card.grade_agent_card (fixed for the 1.0 layout in network 9ab6c0cb4, roadmap#611) grades it conformant with no deviations;
+    the three hand-recorded deviations were 0.3 rules and are removed. The /a2a/ page changes only when build_a2a.py is next run.'
