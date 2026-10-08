@@ -164,6 +164,10 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Plans
+  url: plans/smklog-com-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/smklog-com-rate-limits.yml
 - url: https://smklog.com/feed.xml
   type: BlogRSS
 - type: Overlay
