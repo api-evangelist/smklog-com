@@ -164,6 +164,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/smklog-com-capability-edges.yml
+  name: SMKlog Business Capability Map
 - type: Plans
   url: plans/smklog-com-plans-pricing.yml
 - type: RateLimits
