@@ -523,6 +523,18 @@ common:
   url: https://smklog.com/trust/
 - type: Compliance
   url: https://smklog.com/trust/compliance
+- type: Deprecation
+  url: https://smklog.com/trust/commitments#deprecation
+- type: SupportLifetime
+  url: https://smklog.com/trust/commitments#support-lifetime
+- type: IncidentNotification
+  url: https://smklog.com/trust/commitments#incident-notification
+- type: ExitAssistance
+  url: https://smklog.com/trust/commitments#exit-assistance
+- type: TransparencyReport
+  url: https://smklog.com/trust/commitments#transparency-report
+- type: RoadMap
+  url: https://smklog.com/trust/commitments#roadmap
 - type: Subprocessors
   url: https://smklog.com/trust/subprocessors
 - type: DataResidency
