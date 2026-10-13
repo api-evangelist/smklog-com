@@ -1,0 +1,220 @@
+# SMKlog Quote API — controlled vocabulary.
+#
+# The words the contract, the MCP tools, the A2A skills and the documentation
+# use, each with one meaning. When a term here and a field in the contract
+# disagree, the contract is wrong and gets fixed; the vocabulary is the
+# decision. Enumerations are copied from the live OpenAPI document and are
+# checked against it by api/test/published-artifacts.test.js.
+vocabulary: '1.0.0'
+method: authored
+publisher: SMKlog (SMKLOG-2022 LLC)
+source: https://smklog.com/developers/vocabulary.yaml
+info:
+  provider: SMKlog
+  description: >-
+    Vocabulary for the SMKlog Quote API (REST at quote-api.smklog.com, the same capability over MCP and
+    A2A): the shipment, the money, the handoff to a human, and the words the answers use.
+  created: '2026-10-12'
+  modified: '2026-10-12'
+  contact: info@smklog.com
+
+conventions:
+  - name: field_names
+    rule: snake_case everywhere (from_postal_code, retail_amount, session_id); never camelCase in a body or a query.
+  - name: units_rest
+    rule: The REST contract takes centimetres and kilograms (length_cm, width_cm, height_cm, weight_kg).
+  - name: units_mcp
+    rule: The MCP tools take inches and pounds (length_in, width_in, height_in, weight_lb) because that is how people describe boxes; the server converts.
+  - name: money
+    rule: Money is a JSON number in USD with two decimals of meaning; never a string, never cents.
+  - name: identifiers
+    rule: quote_id is opaque and lives 15 minutes; session_id is "as_" plus a UUID and lives 30 days; order_id is a UUID.
+  - name: errors
+    rule: "Every error answer is a Problem object: a stable code in \"error\", a sentence in \"message\", and the still-missing field names in \"missing\" when the code is missing_required_fields or product_not_recognized."
+  - name: countries
+    rule: ISO 3166-1 alpha-2, uppercase; the origin is always US.
+  - name: dates
+    rule: ISO 8601 with a timezone for timestamps (created_at, expires_at); a bare ISO date for delivery estimates.
+
+terms:
+  - term: parcel
+    definition: >-
+      One box that a carrier accepts as a parcel: up to 68 kg (150 lb), 274 cm (108 in) on the longest side
+      and 419 cm (165 in) of length plus girth. SMKlog sells labels for parcels only; a shipment past these
+      limits, or on a pallet, answers mode not_a_parcel.
+    type: concept
+    related: [mode, package]
+  - term: shipment
+    definition: "What the caller wants priced: an item (or an exact box), a quantity, an origin ZIP and a destination."
+    type: concept
+    related: [quote, package, lane]
+  - term: quote
+    definition: >-
+      One live pricing of one shipment: the packed box the service used, up to five purchasable rates, and
+      where the estimate and the rates came from. A quote is a snapshot, not a contract; the price the human
+      pays is the rate shown at checkout.
+    type: resource
+    related: [rate, package, quote_id]
+  - term: quote_id
+    definition: >-
+      Opaque handle to a quote, carried by every priced answer of getParcelQuote and of the get_parcel_quote
+      tool, and accepted by createPaymentSession / create_checkout_link for 15 minutes, so the pair costs one
+      carrier call rather than two.
+    type: identifier
+    related: [quote, payment_session]
+  - term: rate
+    definition: >-
+      One purchasable service for the shipment: carrier, service, service_code, amount, retail_amount,
+      delivery signal and currency. Up to five rates come back, best value first.
+    type: resource
+    related: [amount, retail_amount, carrier, service]
+  - term: amount
+    definition: >-
+      The checkout total a customer pays for that rate, USD, with the SMKlog fee inside it. The fee is itemized
+      only on the checkout receipt. Quote the amount to a person as the price.
+    type: field
+    related: [rate, retail_amount]
+  - term: retail_amount
+    definition: >-
+      The carrier's own counter price for the same parcel where the carrier publishes one, USD; 0 where it does
+      not. Shown beside amount so a person can see what buying online saves.
+    type: field
+    related: [amount]
+  - term: carrier
+    definition: The network that moves the parcel. One of USPS, UPS, FedEx or DHL (DHL Express on export lanes).
+    type: enumeration
+    values: [USPS, UPS, FedEx, DHL]
+  - term: service
+    definition: >-
+      The carrier's service level as a display name (Ground Advantage, Priority Mail, Ground, Home Delivery, …).
+      service_code is the carrier's own stable code for the same service.
+    type: field
+    related: [carrier, service_code]
+  - term: package
+    definition: >-
+      The packed box used for pricing: quantity, length_cm, width_cm, height_cm, weight_kg, a short description,
+      the confidence of the estimate and the assumptions it made. Supplied by the caller (confidence manual)
+      or estimated from the item description.
+    type: resource
+    related: [estimate, confidence, assumptions]
+  - term: estimate
+    definition: >-
+      The server-side guess of the packed box and weight from a plain-words item description, built from the
+      product catalog or an AI estimator reading the manufacturer's packaging data. Always correctable by the
+      human before paying.
+    type: concept
+    related: [package, confidence]
+  - term: confidence
+    definition: How sure the estimate is; manual when the caller supplied the measurements.
+    type: enumeration
+    values: [low, medium, high, manual]
+  - term: assumptions
+    definition: Plain sentences stating what the estimate took for granted (the case, the padding, the carton), for the human to correct.
+    type: field
+    related: [estimate]
+  - term: mode
+    definition: The outcome of a quote. Only parcel_label_ready carries rates; every other mode explains why nothing was priced.
+    type: enumeration
+    values: [parcel_label_ready, not_a_parcel, multiple_boxes, international_unsupported_online, parcel_restricted, review, parcel_rates_unavailable]
+    notes:
+      parcel_label_ready: Priced; up to five rates.
+      not_a_parcel: Past parcel limits or described as a pallet or freight load; SMKlog does not arrange pallet or freight shipments.
+      multiple_boxes: The quantity needs more than one box; one label per box, so quote each box on its own.
+      international_unsupported_online: "The destination country is not sold online (sold: US, CA, GB, DE, AU)."
+      parcel_restricted: The item is restricted or prohibited for parcel carriage; no rates.
+      review: The item needs a human look before it can be priced; no rates.
+      parcel_rates_unavailable: No carrier answered for this lane right now.
+  - term: lane
+    definition: An origin-destination pair. The origin is always a US ZIP; the destination is a US ZIP or a postal code in CA, GB, DE or AU.
+    type: concept
+    related: [to_country_code]
+  - term: to_country_code
+    definition: "Destination country, ISO alpha-2. Sold online: US, CA, GB, DE, AU."
+    type: enumeration
+    values: [US, CA, GB, DE, AU]
+  - term: dangerous_goods
+    definition: >-
+      The rule a described item matched (batteries, aerosols, and the like), the carrier restriction it brings and
+      what the human must confirm at checkout. Null when nothing matched. Genuinely prohibited goods answer
+      parcel_restricted instead.
+    type: field
+    related: [mode]
+  - term: payment_session
+    definition: >-
+      A checkout prepared by an agent for a human: a live amount anchored to one service, a handoff_url that opens
+      the SMKlog checkout prefilled, and a session_id to ask about it later. Creating a session charges nothing;
+      the human confirms the consents and pays on Stripe hosted checkout.
+    type: resource
+    related: [session_id, handoff_url, checkout_status]
+  - term: session_id
+    definition: Handle to a payment session, "as_" plus a UUID, good for 30 days. Whoever holds it can read the checkout status, so treat it like a tracking number.
+    type: identifier
+    related: [payment_session]
+  - term: handoff_url
+    definition: The URL that opens the SMKlog checkout prefilled with the shipment; the human finishes there.
+    type: field
+    related: [payment_session]
+  - term: checkout_status
+    definition: Where a payment session stands, read from SMKlog's own order record (no carrier call), never carrying names, addresses or emails.
+    type: enumeration
+    values: [awaiting_checkout, checkout_started, paid, label_ready, delivered, refunded]
+    notes:
+      awaiting_checkout: Link made, no checkout started.
+      checkout_started: A checkout exists, not paid.
+      paid: Paid, label not created yet.
+      label_ready: Label bought; tracking_number present.
+      delivered: The carrier reported delivery.
+      refunded: Refunded or being refunded; any label from this checkout should not be used.
+  - term: tracking_number
+    definition: The carrier's tracking number for a label bought on SMKlog; present from label_ready on. Feed it to the track_parcel tool for scan events.
+    type: identifier
+    related: [checkout_status]
+  - term: label
+    definition: The prepaid carrier shipping label the human buys at checkout, delivered as a 4x6 inch PDF or PNG with the tracking number on it.
+    type: resource
+    related: [tracking_number, carrier]
+  - term: carrier_adjustment
+    definition: >-
+      A correction a carrier bills after acceptance when the parcel measured or weighed more than declared.
+      SMKlog invoices it to the payer's email; the human consents to this at checkout.
+    type: concept
+    related: [label]
+  - term: price_index
+    definition: >-
+      The monthly SMKlog parcel shipping price index: six fixed boxes priced to five US cities through the same
+      live pipeline, published with capture dates. Readable through the get_price_index tool; reading it spends
+      no quote allowance.
+    type: resource
+  - term: quote_allowance
+    definition: >-
+      The per-client hourly bucket of quote requests (about 80 an hour), shared by POST /quote, the MCP
+      get_parcel_quote tool, the A2A skill and any checkout session priced live. Exhaustion answers 429
+      rate_limited. A credentialed client gets its own bucket.
+    type: concept
+    related: [rate_limited]
+  - term: rate_limited
+    definition: The 429 Problem code when a bucket is exhausted. Slow down; the buckets refill hourly.
+    type: error_code
+  - term: product_not_recognized
+    definition: The 400 Problem code when the item text names no shippable thing (an address, a question, a sentence). Name the item itself.
+    type: error_code
+  - term: product_url_not_detected
+    definition: The 422 Problem code when a product page URL did not identify an item. Enter the product name or package dimensions.
+    type: error_code
+  - term: session_failed
+    definition: The 422 Problem code when a payment session cannot be made because the shipment is unpriceable, restricted, not a parcel, or more than one box.
+    type: error_code
+  - term: session_not_found
+    definition: The 404 Problem code for an unknown, malformed or expired session_id.
+    type: error_code
+  - term: missing_required_fields
+    definition: The 400 Problem code when required fields are absent; the "missing" array names them.
+    type: error_code
+
+enumerations:
+  carrier: [USPS, UPS, FedEx, DHL]
+  mode: [parcel_label_ready, not_a_parcel, multiple_boxes, international_unsupported_online, parcel_restricted, review, parcel_rates_unavailable]
+  to_country_code: [US, CA, GB, DE, AU]
+  confidence: [low, medium, high, manual]
+  checkout_status: [awaiting_checkout, checkout_started, paid, label_ready, delivered, refunded]
+  error_code: [invalid_json, invalid_request, missing_required_fields, product_not_recognized, product_url_not_detected, session_failed, session_not_found, rate_limited, invalid_token]

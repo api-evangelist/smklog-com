@@ -2,13 +2,14 @@ generated: '2026-09-19'
 method: searched
 source: https://quote-api.smklog.com/openapi.json
 sources:
+- https://smklog.com/developers/rate-limits.yaml (provider-published, 2026-10-12: three buckets, oauth-token-bucket added)
 - https://quote-api.smklog.com/openapi.json (info.description, 429 responses)
 - https://quote-api.smklog.com/mcp (tools/list — get_parcel_quote and get_checkout_status "Allowance" lines)
 - https://smklog.com/api ("Rate limits are real")
 - https://smklog.com/auth.md
 provider: SMKlog
 providerId: smklog-com
-limit_count: 2
+limit_count: 3
 description: >-
   Two published per-client hourly buckets, both stated in the provider's own contract text: about 80 quote calls an
   hour shared between POST /quote, the MCP get_parcel_quote tool, the A2A skill and (when it prices live)
@@ -37,6 +38,16 @@ limits:
   exhaustion_status: 429
   exhaustion_code: rate_limited
   docs: https://quote-api.smklog.com/openapi.json
+- id: oauth-token-bucket
+  scope: per-client
+  window: 1 hour
+  limit: 20
+  limit_note: '"20 token requests an hour per client; a bearer lives one hour" (https://smklog.com/developers/rate-limits, provider-published 2026-10-12); exhaustion answers 429 slow_down (RFC 8628 wording, OAuth token endpoint)'
+  applies_to: ['POST /oauth/token']
+  burst: not published
+  exhaustion_status: 429
+  exhaustion_code: slow_down
+  docs: https://smklog.com/developers/rate-limits
 exempt:
 - {surface: 'MCP track_parcel', note: '"neither quotes nor spends quote allowance"'}
 - {surface: 'MCP get_price_index', note: '"reading it spends no quote allowance"'}

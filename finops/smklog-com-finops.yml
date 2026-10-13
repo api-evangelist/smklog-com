@@ -1,0 +1,85 @@
+# SMKlog Quote API — FinOps mapping.
+#
+# How cost maps to usage for a consumer of the SMKlog Quote API, in the shape
+# of the FinOps Foundation framework. Written by SMKlog from its own billing:
+# the API itself is free to call and rate limited; money moves only when a
+# human buys a shipping label on smklog.com, as one Stripe charge per label.
+specification: FinOps Framework
+specificationVersion: '1.0'
+schema: https://www.finops.org/framework/
+method: authored
+publisher: SMKlog (SMKLOG-2022 LLC)
+source: https://smklog.com/developers/finops.yaml
+provider: SMKlog
+providerId: smklog-com
+publisherName: SMKlog
+serviceCategory: Parcel shipping labels
+created: '2026-10-12'
+modified: '2026-10-12'
+sources:
+  - https://smklog.com/pricing
+  - https://smklog.com/terms
+  - https://smklog.com/api
+description: >-
+  Quoting is free and anonymous (rate limited per client). A label is bought by a human on Stripe hosted
+  checkout at the amount the quote showed; the amount is the carrier price plus the SMKlog service fee, and
+  the fee is itemized on the checkout receipt. There is no subscription, no minimum, no API key fee and no
+  charge for a quote that leads nowhere.
+billingModel:
+  pricingCategory: Pay per label
+  billingFrequency: Per transaction
+  billingCurrency: USD
+  billingProcessor: Stripe hosted checkout
+  invoicing: Stripe receipt per label; a hosted invoice when a carrier bills a post-acceptance adjustment
+  contractRequired: false
+  freeTier: Every quote, tracking read, checkout-status read and price-index read is free of charge
+chargeableUnits:
+  - name: shipping_label
+    unit: label
+    description: One prepaid carrier label for one parcel, bought by a human at checkout.
+    price: The amount shown on the rate card at checkout (carrier price plus the SMKlog service fee), USD; itemized on the receipt.
+    whoPays: The human completing checkout on smklog.com, never the API caller
+  - name: carrier_adjustment
+    unit: invoice
+    description: A correction a carrier bills after acceptance when a parcel measured or weighed more than declared; passed through at the carrier's charge via a Stripe hosted invoice to the payer's email, with consent given at checkout.
+    price: The carrier's adjustment, USD
+    whoPays: The payer of the label
+meters:
+  - name: quote_requests
+    unit: request
+    aggregation: sum
+    price: 0
+    limit: About 80 an hour per client, shared by POST /quote, the MCP get_parcel_quote tool and checkout sessions priced live
+    note: Each quote spends a live carrier rating that SMKlog pays for; the limit, not a price, is how that cost is controlled.
+  - name: checkout_status_reads
+    unit: request
+    aggregation: sum
+    price: 0
+    limit: 60 an hour per client
+  - name: labels_purchased
+    unit: label
+    aggregation: sum
+    price: Per-label amount at checkout
+  - name: carrier_adjustments
+    unit: invoice
+    aggregation: sum
+    price: Pass-through of the carrier's charge
+costDrivers:
+  - driver: carrier, service and lane
+    effect: The carrier price is live for the exact box and route; the rate card shows the checkout total per service.
+  - driver: packed size and weight
+    effect: Dimensional weight and oversize surcharges are inside the quoted amount; a box that measures larger at the carrier is billed as a carrier adjustment.
+  - driver: destination country
+    effect: Export lanes (CA, GB, DE, AU) price against the carriers that serve them; duties and taxes at the destination are not part of the amount.
+allocation:
+  tagging: session_id (agent checkouts) and order_id (every label) tie a charge to the shipment that produced it; no account is needed to reconcile.
+  recommendation: Reuse quote_id between get_parcel_quote and create_checkout_link so a shipment costs one carrier call, and cache quotes on your side for the 15 minutes a quote_id lives.
+principles:
+  - name: Visibility
+    description: Every price is a checkout total shown before payment; the receipt itemizes the carrier price and the SMKlog service fee.
+  - name: Allocation
+    description: One charge per label, one order id per charge; adjustments reference the order they correct.
+  - name: Optimization
+    description: Compare the up-to-five rates returned; the first is the best value, the cheapest is marked by amount.
+  - name: Accountability
+    description: Carrier adjustments are consented to at checkout and invoiced to the payer, not absorbed into other customers' prices.
