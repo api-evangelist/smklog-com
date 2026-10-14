@@ -1,22 +1,21 @@
 aid: smklog-com
 name: SMKlog
-description: 'SMKlog (SMKLOG-2022 LLC, Berkeley Heights, New Jersey) is an independent US parcel shipping
-  calculator and label seller: describe an item in plain words, get live USPS, UPS, FedEx and DHL Express
-  rates from a US origin to the US, Canada, the UK, Germany or Australia, and buy the label online. The same
-  pricing engine is published for machines as the SMKlog Quote API on quote-api.smklog.com: an OpenAPI 3.1
-  contract with no key required, a remote MCP server with five tools (plus an open-source stdio bridge), an
-  A2A agent card, an RFC 9727 api-catalog, RFC 8414/9728 OAuth metadata for an optional client_credentials
-  rate-limit tier, two provider-published Agent Skills and an llms.txt. Agents price and prepare checkout;
-  a human always completes payment on smklog.com.'
+description: 'SMKlog (SMKLOG-2022 LLC, Berkeley Heights, New Jersey) is an independent US parcel shipping calculator and label
+  seller: describe an item in plain words, get live USPS, UPS, FedEx and DHL Express rates from a US origin to the US, Canada,
+  the UK, Germany or Australia, and buy the label online. The same pricing engine is published for machines as the SMKlog
+  Quote API on quote-api.smklog.com: an OpenAPI 3.1 contract with no key required, a remote MCP server with five tools (plus
+  an open-source stdio bridge), an A2A agent card, an RFC 9727 api-catalog, RFC 8414/9728 OAuth metadata for an optional client_credentials
+  rate-limit tier, two provider-published Agent Skills and an llms.txt. Agents price and prepare checkout; a human always
+  completes payment on smklog.com.'
 image: https://smklog.com/assets/icon-512.png
-url: https://raw.githubusercontent.com/api-evangelist/smklog-com/refs/heads/main/apis.yml
+url: https://smklog.com/apis.json
 x-type: company
 x-source: harvest:a2a-registry
 x-tier: profiled
 x-tier-reason: full-pipeline enrichment 2026-09-19 from the live smklog.com and quote-api.smklog.com surface
 specificationVersion: '0.20'
 created: '2026-09-19'
-modified: '2026-10-08'
+modified: '2026-10-12'
 tags:
 - Company
 - Shipping
@@ -80,6 +79,90 @@ apis:
     url: data-model/smklog-com-data-model.yml
   - type: ChangeLog
     url: changelog/smklog-com-changelog.yml
+  - type: Examples
+    url: https://smklog.com/developers/samples/
+  - type: Playground
+    url: https://smklog.com/developers/playground
+  - type: Postman
+    url: https://smklog.com/developers/postman/smklog-quote-api.postman_collection.json
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/quote-request.schema.json
+    name: QuoteRequest schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/package.schema.json
+    name: Package schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/rate.schema.json
+    name: Rate schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/quote-response.schema.json
+    name: QuoteResponse schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-session-request.schema.json
+    name: CheckoutSessionRequest schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-session.schema.json
+    name: CheckoutSession schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-status.schema.json
+    name: CheckoutStatus schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/liveness.schema.json
+    name: Liveness schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/problem.schema.json
+    name: Problem schema
+  - type: JSONLD
+    url: https://smklog.com/developers/schemas/context.jsonld
+  - type: Vocabulary
+    url: https://smklog.com/developers/vocabulary.yaml
+  - type: SpectralRules
+    url: https://smklog.com/developers/spectral.yaml
+  - type: Overlay
+    url: https://smklog.com/developers/overlay.yaml
+  - type: StatusPage
+    url: https://smklog.com/developers/status
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-session-request-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-session-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-status-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-liveness-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-package-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-problem-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-quote-request-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-quote-response-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-rate-schema.json
+    name: Provider-published copy
+  - type: JSONLD
+    url: json-ld/smklog-com-context.jsonld
+  - type: SDK
+    url: https://www.npmjs.com/package/smklog
+    name: 'JavaScript / TypeScript SDK (npm: smklog)'
+  - type: SDK
+    url: https://pypi.org/project/smklog-sdk/
+    name: 'Python SDK (PyPI: smklog-sdk)'
+  - type: SDK
+    url: https://github.com/smklog/smklog-sdk/tree/main/go
+    name: Go SDK (module github.com/smklog/smklog-sdk/go)
+  - type: CLI
+    url: https://pypi.org/project/smklog-sdk/#command-line
+    name: smklog command line (ships with the Python package)
 - aid: smklog-com:smklog-com-quote-api
   name: SMKlog Quote API
   description: The Quote API from SMKlog — 1 operation(s) for quote.
@@ -120,6 +203,90 @@ apis:
     url: data-model/smklog-com-data-model.yml
   - type: ChangeLog
     url: changelog/smklog-com-changelog.yml
+  - type: Examples
+    url: https://smklog.com/developers/samples/
+  - type: Playground
+    url: https://smklog.com/developers/playground
+  - type: Postman
+    url: https://smklog.com/developers/postman/smklog-quote-api.postman_collection.json
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/quote-request.schema.json
+    name: QuoteRequest schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/package.schema.json
+    name: Package schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/rate.schema.json
+    name: Rate schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/quote-response.schema.json
+    name: QuoteResponse schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-session-request.schema.json
+    name: CheckoutSessionRequest schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-session.schema.json
+    name: CheckoutSession schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-status.schema.json
+    name: CheckoutStatus schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/liveness.schema.json
+    name: Liveness schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/problem.schema.json
+    name: Problem schema
+  - type: JSONLD
+    url: https://smklog.com/developers/schemas/context.jsonld
+  - type: Vocabulary
+    url: https://smklog.com/developers/vocabulary.yaml
+  - type: SpectralRules
+    url: https://smklog.com/developers/spectral.yaml
+  - type: Overlay
+    url: https://smklog.com/developers/overlay.yaml
+  - type: StatusPage
+    url: https://smklog.com/developers/status
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-session-request-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-session-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-status-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-liveness-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-package-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-problem-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-quote-request-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-quote-response-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-rate-schema.json
+    name: Provider-published copy
+  - type: JSONLD
+    url: json-ld/smklog-com-context.jsonld
+  - type: SDK
+    url: https://www.npmjs.com/package/smklog
+    name: 'JavaScript / TypeScript SDK (npm: smklog)'
+  - type: SDK
+    url: https://pypi.org/project/smklog-sdk/
+    name: 'Python SDK (PyPI: smklog-sdk)'
+  - type: SDK
+    url: https://github.com/smklog/smklog-sdk/tree/main/go
+    name: Go SDK (module github.com/smklog/smklog-sdk/go)
+  - type: CLI
+    url: https://pypi.org/project/smklog-sdk/#command-line
+    name: smklog command line (ships with the Python package)
 - aid: smklog-com:smklog-com-status-api
   name: SMKlog Status API
   description: The Status API from SMKlog — 1 operation(s) for status.
@@ -158,6 +325,90 @@ apis:
     url: data-model/smklog-com-data-model.yml
   - type: ChangeLog
     url: changelog/smklog-com-changelog.yml
+  - type: Examples
+    url: https://smklog.com/developers/samples/
+  - type: Playground
+    url: https://smklog.com/developers/playground
+  - type: Postman
+    url: https://smklog.com/developers/postman/smklog-quote-api.postman_collection.json
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/quote-request.schema.json
+    name: QuoteRequest schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/package.schema.json
+    name: Package schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/rate.schema.json
+    name: Rate schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/quote-response.schema.json
+    name: QuoteResponse schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-session-request.schema.json
+    name: CheckoutSessionRequest schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-session.schema.json
+    name: CheckoutSession schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/checkout-status.schema.json
+    name: CheckoutStatus schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/liveness.schema.json
+    name: Liveness schema
+  - type: JSONSchema
+    url: https://smklog.com/developers/schemas/problem.schema.json
+    name: Problem schema
+  - type: JSONLD
+    url: https://smklog.com/developers/schemas/context.jsonld
+  - type: Vocabulary
+    url: https://smklog.com/developers/vocabulary.yaml
+  - type: SpectralRules
+    url: https://smklog.com/developers/spectral.yaml
+  - type: Overlay
+    url: https://smklog.com/developers/overlay.yaml
+  - type: StatusPage
+    url: https://smklog.com/developers/status
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-session-request-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-session-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-checkout-status-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-liveness-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-package-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-problem-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-quote-request-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-quote-response-schema.json
+    name: Provider-published copy
+  - type: JSONSchema
+    url: json-schema/smklog-com-rate-schema.json
+    name: Provider-published copy
+  - type: JSONLD
+    url: json-ld/smklog-com-context.jsonld
+  - type: SDK
+    url: https://www.npmjs.com/package/smklog
+    name: 'JavaScript / TypeScript SDK (npm: smklog)'
+  - type: SDK
+    url: https://pypi.org/project/smklog-sdk/
+    name: 'Python SDK (PyPI: smklog-sdk)'
+  - type: SDK
+    url: https://github.com/smklog/smklog-sdk/tree/main/go
+    name: Go SDK (module github.com/smklog/smklog-sdk/go)
+  - type: CLI
+    url: https://pypi.org/project/smklog-sdk/#command-line
+    name: smklog command line (ships with the Python package)
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -222,6 +473,130 @@ common:
   url: security/smklog-com-domain-security.yml
 - type: DataSubjectRequest
   url: https://smklog.com/privacy
+- type: About
+  url: https://smklog.com/about
+- type: Leadership
+  url: https://smklog.com/about
+  name: Founder and CEO
+- type: Newsroom
+  url: https://smklog.com/news/
+- type: Blog
+  url: https://smklog.com/lp/
+  name: Cost guides (1,600+ articles, Atom feed at /feed.xml)
+- type: DeveloperPortal
+  url: https://smklog.com/developers/
+- type: Examples
+  url: https://smklog.com/developers/samples/
+- type: Playground
+  url: https://smklog.com/developers/playground
+- type: Console
+  url: https://smklog.com/developers/playground
+- type: Postman
+  url: https://smklog.com/developers/postman/smklog-quote-api.postman_collection.json
+- type: OAuthAuthorizationServer
+  url: https://quote-api.smklog.com/.well-known/oauth-authorization-server
+- type: OAuthProtectedResource
+  url: https://quote-api.smklog.com/.well-known/oauth-protected-resource
+- type: Plans
+  url: https://smklog.com/pricing
+- type: FinOps
+  url: https://smklog.com/developers/finops.yaml
+- type: RateLimits
+  url: https://smklog.com/developers/rate-limits
+- type: RateLimits
+  url: https://smklog.com/developers/rate-limits.yaml
+  name: Rate limits, machine-readable
+- type: StatusPage
+  url: https://smklog.com/developers/status
+- type: ChangeLog
+  url: https://smklog.com/news/
+- type: Versioning
+  url: https://smklog.com/developers/#versioning
+- type: SpectralRules
+  url: https://smklog.com/developers/spectral.yaml
+- type: Vocabulary
+  url: https://smklog.com/developers/vocabulary.yaml
+- type: Overlay
+  url: https://smklog.com/developers/overlay.yaml
+- type: JSONLD
+  url: https://smklog.com/developers/schemas/context.jsonld
+- type: SBOM
+  url: https://smklog.com/developers/sbom.cdx.json
+- type: TrustCenter
+  url: https://smklog.com/trust/
+- type: Compliance
+  url: https://smklog.com/trust/compliance
+- type: Deprecation
+  url: https://smklog.com/trust/commitments#deprecation
+- type: SupportLifetime
+  url: https://smklog.com/trust/commitments#support-lifetime
+- type: IncidentNotification
+  url: https://smklog.com/trust/commitments#incident-notification
+- type: ExitAssistance
+  url: https://smklog.com/trust/commitments#exit-assistance
+- type: TransparencyReport
+  url: https://smklog.com/trust/commitments#transparency-report
+- type: RoadMap
+  url: https://smklog.com/trust/commitments#roadmap
+- type: Subprocessors
+  url: https://smklog.com/trust/subprocessors
+- type: DataResidency
+  url: https://smklog.com/trust/data-residency
+- type: VulnerabilityDisclosure
+  url: https://smklog.com/.well-known/security.txt
+- type: Contact
+  url: mailto:info@smklog.com
+- type: APICatalog
+  url: https://smklog.com/.well-known/api-catalog
+- type: AICatalog
+  url: https://smklog.com/.well-known/ai-catalog.json
+- type: MCPServerCard
+  url: https://smklog.com/.well-known/mcp/server-card.json
+- type: AgentSkills
+  url: https://smklog.com/.well-known/agent-skills/index.json
+- type: HTTPMessageSignatures
+  url: https://smklog.com/.well-known/http-message-signatures-directory
+- type: GitHubRepository
+  url: https://github.com/smklog/parcel-shipping-rates-mcp
+  name: MCP stdio bridge (open source)
+- type: Packages
+  url: https://www.npmjs.com/package/parcel-shipping-rates-mcp
+- type: SpectralRules
+  url: rules/smklog-com-spectral-rules.yml
+  name: Provider-published copy (first-party)
+- type: Vocabulary
+  url: vocabulary/smklog-com-vocabulary.yaml
+  name: Provider-published copy (first-party)
+- type: FinOps
+  url: finops/smklog-com-finops.yml
+  name: Provider-published copy (first-party)
+- type: JSONLD
+  url: json-ld/smklog-com-context.jsonld
+  name: Provider-published copy (first-party)
+- type: Postman
+  url: postman/smklog-com-quote-api.postman_collection.json
+  name: Provider-published copy (first-party)
+- type: Overlay
+  url: overlays/smklog-com-agent-crosswalk-overlay.yaml
+  name: Provider-published copy (first-party)
+- type: Examples
+  url: examples/smklog-com-get-parcel-quote-request-example.json
+  name: Provider-published example payloads (6 files in examples/)
+- type: GitHubRepository
+  url: https://github.com/smklog/smklog-sdk
+  name: Official client libraries (open source)
+- type: SDK
+  url: https://www.npmjs.com/package/smklog
+  name: 'JavaScript / TypeScript SDK (npm: smklog)'
+- type: SDK
+  url: https://pypi.org/project/smklog-sdk/
+  name: 'Python SDK (PyPI: smklog-sdk)'
+- type: SDK
+  url: https://github.com/smklog/smklog-sdk/tree/main/go
+  name: Go SDK (module github.com/smklog/smklog-sdk/go)
+- type: CLI
+  url: https://pypi.org/project/smklog-sdk/#command-line
+  name: smklog command line (ships with the Python package)
 x-enrichment:
   date: '2026-09-19'
   status: enriched
@@ -230,22 +605,37 @@ x-enrichment:
 x-a2a:
   verified: true
   probed: '2026-10-08'
-  url: "https://smklog.com/.well-known/agent-card.json"
-  grade: "conformant"
-  protocol_version: "1.0"
+  url: https://smklog.com/.well-known/agent-card.json
+  grade: conformant
+  protocol_version: '1.0'
   control: 404
 x-correction-request:
   requested: '2026-10-07'
   source:
   - _messages/2026-10/2026-10-07-fastmail-38773-a2a-card-check-on-apisioa2asmklog-com-applies-v03.md
   request: 'Dmitrii Timin (ceo@smklog.com), 2026-10-07: https://apis.io/a2a/smklog-com shows "Agent card, not A2A" with no-protocolVersion,
-    no-top-level-url and supportedInterfaces-instead-of-preferredTransport-and-url -- 0.3 rules applied to an A2A 1.0 card (spec 4.4.1,
-    4.4.6: no top-level url/preferredTransport/protocolVersion; supportedInterfaces[] carries url, protocolBinding, protocolVersion). The
-    page is built from a 2026-09-19 copy; the live card has three skills, declares 1.0 and is JWS-signed. Re-capture and fix the check.'
+    no-top-level-url and supportedInterfaces-instead-of-preferredTransport-and-url -- 0.3 rules applied to an A2A 1.0 card
+    (spec 4.4.1, 4.4.6: no top-level url/preferredTransport/protocolVersion; supportedInterfaces[] carries url, protocolBinding,
+    protocolVersion). The page is built from a 2026-09-19 copy; the live card has three skills, declares 1.0 and is JWS-signed.
+    Re-capture and fix the check.'
   applied: '2026-10-08'
-  applied_note: 'Verified live 2026-10-08: card 200 application/json on smklog.com (same JSON on quote-api.smklog.com), version 1.4.0,
-    supportedInterfaces[0] {url https://quote-api.smklog.com/a2a, protocolBinding JSONRPC, protocolVersion 1.0}, 3 skills, ES256 JWS
-    signature verifies against https://smklog.com/.well-known/jwks.json (kid smklog-a2a-2026-09) over the JCS-canonical card; the endpoint
-    answers both tasks/get (0.3) and GetTask (1.0) with a JSON-RPC -32001. Re-captured the card verbatim and rewrote a2a/smklog-com-a2a.yml:
-    lib_agent_card.grade_agent_card (fixed for the 1.0 layout in network 9ab6c0cb4, roadmap#611) grades it conformant with no deviations;
-    the three hand-recorded deviations were 0.3 rules and are removed. The /a2a/ page changes only when build_a2a.py is next run.'
+  applied_note: 'Verified live 2026-10-08: card 200 application/json on smklog.com (same JSON on quote-api.smklog.com), version
+    1.4.0, supportedInterfaces[0] {url https://quote-api.smklog.com/a2a, protocolBinding JSONRPC, protocolVersion 1.0}, 3
+    skills, ES256 JWS signature verifies against https://smklog.com/.well-known/jwks.json (kid smklog-a2a-2026-09) over the
+    JCS-canonical card; the endpoint answers both tasks/get (0.3) and GetTask (1.0) with a JSON-RPC -32001. Re-captured the
+    card verbatim and rewrote a2a/smklog-com-a2a.yml: lib_agent_card.grade_agent_card (fixed for the 1.0 layout in network
+    9ab6c0cb4, roadmap#611) grades it conformant with no deviations; the three hand-recorded deviations were 0.3 rules and
+    are removed. The /a2a/ page changes only when build_a2a.py is next run.'
+x-provenance:
+  method: published
+  publisher: SMKlog (SMKLOG-2022 LLC)
+  source: https://smklog.com/apis.json
+  published: '2026-10-12'
+  note: The provider self-hosts this index at the source URL; every artifact added on 2026-10-12 carries method/publisher/source
+    markers and is served first-party on smklog.com.
+x-provider-update:
+  date: '2026-10-12'
+  by: SMKlog (info@smklog.com)
+  note: 'Full record update: url now the self-hosted APIs.json; provider-published artifacts added as files (rules, vocabulary,
+    finops, json-ld, json-schema, examples, postman, overlay) and as pointers; rate-limits gains the third bucket; openapi/_original
+    refreshed with the 2026-10-12 contract. See docs/catalogs/apis-io/README.md in github.com/smklog/tony.'

@@ -1,0 +1,58 @@
+# SMKlog Quote API — OpenAPI Overlay 1.0.0.
+#
+# The agent-facing layer over the published contract: binds each REST operation
+# to the MCP tool and A2A skill that front it, and states the rate-limit bucket
+# each one spends. Applied with any Overlay 1.0 processor
+# (e.g. `npx -y @stoplight/spectral-cli` does not apply overlays; use
+# `npx -y openapi-overlays-js apply` or `npx -y @redocly/cli bundle --overlay`)
+# to produce the enriched document; the live /openapi.json stays the plain one
+# so every reader sees the same contract. Targets are checked against the live
+# document by api/test/published-artifacts.test.js: an action that names a path
+# the contract no longer has fails the build.
+overlay: 1.0.0
+info:
+  title: SMKlog Quote API — agent crosswalk overlay
+  version: '2026-10-12'
+  description: >-
+    Adds x-mcp-tool, x-a2a-skill and x-rate-limit to the four operations of the SMKlog Quote API. Maintained
+    by SMKlog beside the contract (method: authored).
+extends: https://quote-api.smklog.com/openapi.json
+x-method: authored
+x-publisher: SMKlog (SMKLOG-2022 LLC)
+x-source: https://smklog.com/developers/overlay.yaml
+actions:
+  - target: $.info
+    description: Name the agent surfaces this contract is mirrored on.
+    update:
+      x-smklog:
+        surfaces:
+          mcp: https://quote-api.smklog.com/mcp
+          mcp_server_card: https://quote-api.smklog.com/.well-known/mcp/server-card.json
+          a2a: https://quote-api.smklog.com/a2a
+          agent_card: https://smklog.com/.well-known/agent-card.json
+          agent_skills: https://quote-api.smklog.com/.well-known/agent-skills/index.json
+          api_catalog: https://smklog.com/.well-known/api-catalog
+          developer_portal: https://smklog.com/developers/
+  - target: $.paths['/quote'].post
+    description: getParcelQuote is the get_parcel_quote tool and the get_parcel_quote A2A skill; it spends the quote bucket.
+    update:
+      x-mcp-tool: get_parcel_quote
+      x-a2a-skill: get_parcel_quote
+      x-rate-limit: quote bucket, about 80 requests an hour per client, shared with the MCP endpoint
+  - target: $.paths['/agent/checkout-session'].post
+    description: createPaymentSession is the create_checkout_link tool and the create_checkout_link A2A skill; it spends the quote bucket only when it prices live.
+    update:
+      x-mcp-tool: create_checkout_link
+      x-a2a-skill: create_checkout_link
+      x-rate-limit: quote bucket when no valid quote_id is supplied; none when a quote_id is reused
+  - target: $.paths['/agent/checkout-session/{session_id}'].get
+    description: getCheckoutStatus is the get_checkout_status tool and the get_checkout_status A2A skill; it has its own bucket.
+    update:
+      x-mcp-tool: get_checkout_status
+      x-a2a-skill: get_checkout_status
+      x-rate-limit: 60 checks an hour per client
+  - target: $.paths['/status'].get
+    description: The liveness probe has no tool and no bucket.
+    update:
+      x-mcp-tool: null
+      x-rate-limit: none; a public liveness probe, cacheable for an hour

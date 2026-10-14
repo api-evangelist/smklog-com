@@ -1,0 +1,221 @@
+# method: authored
+# publisher: SMKlog (SMKLOG-2022 LLC)
+# source: https://smklog.com/developers/spectral.yaml
+# SMKlog Quote API — Spectral ruleset. Written and maintained by SMKlog (x-method: authored).
+#
+# What this file is. The rules the live contract at
+# https://quote-api.smklog.com/openapi.json is held to before it ships. It
+# extends the maintained spectral:oas base (structure, operationIds, unused
+# components and the rest) and adds the house rules below: every operation
+# explains itself, every error answer is the one Problem shape, examples ride
+# on every request and every 200, and the document says who wrote it.
+#
+# How it is enforced. api/test/openapi-contract.test.js asserts the same
+# promises in code on every test run, and the ruleset is run against the
+# live document with Spectral before the worker deploys
+# (npx @stoplight/spectral-cli lint openapi.json -r developers/spectral.yaml,
+# expected result: 0 errors, 0 warnings).
+#
+# Severity means something here: error blocks a deploy, warn is a promise we
+# keep and want to see broken loudly, info is guidance.
+x-method: authored
+x-publisher: SMKlog (SMKLOG-2022 LLC)
+x-source: https://smklog.com/developers/spectral.yaml
+x-version: '2026-10-12'
+documentationUrl: https://smklog.com/developers/#governance
+extends:
+  - spectral:oas
+rules:
+  smklog-operation-summary:
+    description: Every operation carries a one-line summary.
+    severity: error
+    given: $.paths[*][get,post,put,patch,delete]
+    then:
+      field: summary
+      function: truthy
+  smklog-operation-description:
+    description: Every operation explains what it does, when to call it and what it costs; a summary alone is a name, not a contract.
+    severity: error
+    given: $.paths[*][get,post,put,patch,delete]
+    then:
+      field: description
+      function: length
+      functionOptions:
+        min: 40
+  smklog-operation-tags:
+    description: Every operation belongs to a declared tag (quotes, checkout, operations).
+    severity: error
+    given: $.paths[*][get,post,put,patch,delete]
+    then:
+      field: tags
+      function: length
+      functionOptions:
+        min: 1
+  smklog-operation-id-camel-case:
+    description: operationIds are camelCase and stable; SDKs and the MCP crosswalk key on them.
+    severity: warn
+    given: $.paths[*][get,post,put,patch,delete].operationId
+    then:
+      function: pattern
+      functionOptions:
+        match: ^[a-z][A-Za-z0-9]*$
+  smklog-path-lowercase:
+    description: Paths are lowercase with hyphens; a path parameter is the only thing in braces.
+    severity: warn
+    given: $.paths
+    then:
+      field: '@key'
+      function: pattern
+      functionOptions:
+        match: ^(/[a-z0-9-]+|/\{[a-z_]+\})+$
+  smklog-property-snake-case:
+    description: Schema properties are snake_case, the same spelling the MCP tools use.
+    severity: warn
+    given: $.components.schemas[*].properties
+    then:
+      field: '@key'
+      function: pattern
+      functionOptions:
+        match: ^[a-z][a-z0-9_]*$
+  smklog-write-documents-4xx:
+    description: Every write operation documents at least one 4xx answer; the refusal is part of the contract.
+    severity: warn
+    given: $.paths[*][post,put,patch,delete].responses
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          patternProperties:
+            '^4[0-9][0-9]$':
+              type: object
+          additionalProperties: true
+          minProperties: 2
+  smklog-error-answers-are-problems:
+    description: Every documented 4xx or 5xx answer uses the shared Problem schema (error, message, missing).
+    severity: error
+    given: $.paths[*][*].responses[?(@property >= 400)].content['application/json'].schema
+    then:
+      field: $ref
+      function: pattern
+      functionOptions:
+        match: /Problem$
+  smklog-request-has-example:
+    description: Every request body ships an example, so a caller sees the payload shape before the first call.
+    severity: warn
+    given: $.paths[*][*].requestBody.content[*]
+    then:
+      function: xor
+      functionOptions:
+        properties:
+          - example
+          - examples
+  smklog-success-has-example:
+    description: Every 200 answer ships an example of the body it promises.
+    severity: warn
+    given: $.paths[*][*].responses['200'].content[*]
+    then:
+      function: xor
+      functionOptions:
+        properties:
+          - example
+          - examples
+  smklog-servers-https:
+    description: Servers are https; there is no plaintext host.
+    severity: error
+    given: $.servers[*].url
+    then:
+      function: pattern
+      functionOptions:
+        match: ^https://
+  smklog-no-credentials-in-query:
+    description: No security scheme reads a credential from the query string.
+    severity: error
+    given: $.components.securitySchemes[*]
+    then:
+      field: in
+      function: pattern
+      functionOptions:
+        notMatch: ^query$
+  smklog-anonymous-first:
+    description: The first global security requirement is the empty one; the API is open and a token only buys a rate-limit bucket.
+    severity: warn
+    given: $.security[0]
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          maxProperties: 0
+  smklog-contact-email:
+    description: info.contact names a mailbox a person answers.
+    severity: error
+    given: $.info.contact
+    then:
+      field: email
+      function: pattern
+      functionOptions:
+        match: ^[^@\s]+@smklog\.com$
+  smklog-provenance-declared:
+    description: The document says who wrote it in the catalog vocabulary (method, publisher, source).
+    severity: error
+    given: $
+    then:
+      field: x-provenance
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required: [method, publisher, source]
+          properties:
+            method:
+              enum: [declared, authored, published, self-reported]
+            publisher:
+              type: string
+              minLength: 3
+            source:
+              type: string
+              pattern: ^https://
+  smklog-tags-described:
+    description: Every tag carries a description.
+    severity: info
+    given: $.tags[*]
+    then:
+      field: description
+      function: truthy
+  smklog-schemas-described:
+    description: Every component schema says what it models.
+    severity: info
+    given: $.components.schemas[*]
+    then:
+      field: description
+      function: truthy
+  smklog-money-is-number:
+    description: Money fields are JSON numbers in USD, never strings.
+    severity: info
+    given: $.components.schemas[*].properties[amount,retail_amount]
+    then:
+      field: type
+      function: pattern
+      functionOptions:
+        match: ^number$
+  smklog-currency-is-usd:
+    description: A currency field enumerates USD; the API prices in one currency.
+    severity: info
+    given: $.components.schemas[*].properties.currency
+    then:
+      field: enum
+      function: schema
+      functionOptions:
+        schema:
+          type: array
+          contains:
+            const: USD
+  smklog-version-is-semver:
+    description: info.version is the product semver shared with the MCP server and the agent card.
+    severity: info
+    given: $.info.version
+    then:
+      function: pattern
+      functionOptions:
+        match: ^[0-9]+\.[0-9]+\.[0-9]+$
