@@ -559,8 +559,6 @@ common:
 - type: GitHubRepository
   url: https://github.com/smklog/parcel-shipping-rates-mcp
   name: MCP stdio bridge (open source)
-- type: Packages
-  url: https://www.npmjs.com/package/parcel-shipping-rates-mcp
 - type: SpectralRules
   url: rules/smklog-com-spectral-rules.yml
   name: Provider-published copy (first-party)
