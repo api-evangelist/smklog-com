@@ -1,0 +1,14 @@
+{
+  "repo": "smklog-com",
+  "feeds": [
+    {
+      "source": "https://smklog.com/feed.xml",
+      "feed_url": "https://smklog.com/feed.xml",
+      "title": "",
+      "saved": 60,
+      "method": "feed"
+    }
+  ],
+  "post_count": 60,
+  "fetched": "2026-10-10T13:15:00Z"
+}
