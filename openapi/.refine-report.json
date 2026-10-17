@@ -4,25 +4,21 @@
     "_original/smklog-com-openapi.yml"
   ],
   "outputs": [
-    "smklog-com-agent-api-openapi.yml",
-    "smklog-com-quote-api-openapi.yml",
-    "smklog-com-status-api-openapi.yml"
+    "smklog-com-checkout-api-openapi.yml",
+    "smklog-com-operations-api-openapi.yml",
+    "smklog-com-quotes-api-openapi.yml"
   ],
-  "archived": [],
+  "archived": [
+    "deleted 3 superseded output(s) from the previous generation"
+  ],
   "errors": [],
   "warnings": [],
   "notes": [
     "1 archived document(s) dropped as subsets of other archived documents",
     "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
     "smklog-com-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "smklog-com-openapi.yml: tagged paths POST /quote -> Quote",
-    "smklog-com-openapi.yml: tagged paths POST /agent/checkout-session -> Agent",
-    "smklog-com-openapi.yml: tagged paths GET /agent/checkout-session/{session_id} -> Agent",
-    "smklog-com-openapi.yml: tagged paths GET /status -> Status",
-    "smklog-com-openapi.yml: declared missing tag: Agent",
-    "smklog-com-openapi.yml: declared missing tag: Quote",
-    "smklog-com-openapi.yml: declared missing tag: Status",
-    "apis.yml register: already-registered"
+    "superseded outputs removed: smklog-com-agent-api-openapi.yml, smklog-com-quote-api-openapi.yml, smklog-com-status-api-openapi.yml",
+    "apis.yml register: written (+3 apis, 3 total)"
   ],
   "skipped": [
     "_original/smklog-com-quote-api-openapi.json: archived document superseded by a larger archived document",

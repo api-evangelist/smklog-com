@@ -39,18 +39,16 @@ tags_raw:
 - MCP
 - A2A
 apis:
-- aid: smklog-com:smklog-com-agent-api
-  name: SMKlog Agent API
-  description: The Agent API from SMKlog — 2 operation(s) for agent.
+- aid: smklog-com:smklog-com-checkout-api
+  name: SMKlog Checkout API
+  description: Agent-prepared payment sessions completed by a human on smklog.com.
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
-  - Agents
-  tags_raw:
-  - Agent
+  - checkout
   properties:
   - type: OpenAPI
-    url: openapi/smklog-com-agent-api-openapi.yml
+    url: openapi/smklog-com-checkout-api-openapi.yml
   - type: Documentation
     url: https://smklog.com/api
   - type: APIReference
@@ -87,94 +85,68 @@ apis:
     url: https://smklog.com/developers/postman/smklog-quote-api.postman_collection.json
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/quote-request.schema.json
-    name: QuoteRequest schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/package.schema.json
-    name: Package schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/rate.schema.json
-    name: Rate schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/quote-response.schema.json
-    name: QuoteResponse schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-session-request.schema.json
-    name: CheckoutSessionRequest schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-session.schema.json
-    name: CheckoutSession schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-status.schema.json
-    name: CheckoutStatus schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/liveness.schema.json
-    name: Liveness schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/problem.schema.json
-    name: Problem schema
   - type: JSONLD
     url: https://smklog.com/developers/schemas/context.jsonld
   - type: Vocabulary
     url: https://smklog.com/developers/vocabulary.yaml
   - type: SpectralRules
     url: https://smklog.com/developers/spectral.yaml
-  - type: Overlay
-    url: https://smklog.com/developers/overlay.yaml
   - type: StatusPage
     url: https://smklog.com/developers/status
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-session-request-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-session-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-status-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-liveness-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-package-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-problem-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-quote-request-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-quote-response-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-rate-schema.json
-    name: Provider-published copy
   - type: JSONLD
     url: json-ld/smklog-com-context.jsonld
   - type: SDK
     url: https://www.npmjs.com/package/smklog
-    name: 'JavaScript / TypeScript SDK (npm: smklog)'
   - type: SDK
     url: https://pypi.org/project/smklog-sdk/
-    name: 'Python SDK (PyPI: smklog-sdk)'
   - type: SDK
     url: https://github.com/smklog/smklog-sdk/tree/main/go
-    name: Go SDK (module github.com/smklog/smklog-sdk/go)
   - type: CLI
     url: https://pypi.org/project/smklog-sdk/#command-line
-    name: smklog command line (ships with the Python package)
-- aid: smklog-com:smklog-com-quote-api
-  name: SMKlog Quote API
-  description: The Quote API from SMKlog — 1 operation(s) for quote.
+- aid: smklog-com:smklog-com-operations-api
+  name: SMKlog Operations API
+  description: Liveness.
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
-  - Quotes
-  tags_raw:
-  - Quote
+  - operations
   properties:
   - type: OpenAPI
-    url: openapi/smklog-com-quote-api-openapi.yml
+    url: openapi/smklog-com-operations-api-openapi.yml
   - type: Documentation
     url: https://smklog.com/api
   - type: APIReference
@@ -211,92 +183,68 @@ apis:
     url: https://smklog.com/developers/postman/smklog-quote-api.postman_collection.json
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/quote-request.schema.json
-    name: QuoteRequest schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/package.schema.json
-    name: Package schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/rate.schema.json
-    name: Rate schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/quote-response.schema.json
-    name: QuoteResponse schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-session-request.schema.json
-    name: CheckoutSessionRequest schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-session.schema.json
-    name: CheckoutSession schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-status.schema.json
-    name: CheckoutStatus schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/liveness.schema.json
-    name: Liveness schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/problem.schema.json
-    name: Problem schema
   - type: JSONLD
     url: https://smklog.com/developers/schemas/context.jsonld
   - type: Vocabulary
     url: https://smklog.com/developers/vocabulary.yaml
   - type: SpectralRules
     url: https://smklog.com/developers/spectral.yaml
-  - type: Overlay
-    url: https://smklog.com/developers/overlay.yaml
   - type: StatusPage
     url: https://smklog.com/developers/status
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-session-request-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-session-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-status-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-liveness-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-package-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-problem-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-quote-request-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-quote-response-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-rate-schema.json
-    name: Provider-published copy
   - type: JSONLD
     url: json-ld/smklog-com-context.jsonld
   - type: SDK
     url: https://www.npmjs.com/package/smklog
-    name: 'JavaScript / TypeScript SDK (npm: smklog)'
   - type: SDK
     url: https://pypi.org/project/smklog-sdk/
-    name: 'Python SDK (PyPI: smklog-sdk)'
   - type: SDK
     url: https://github.com/smklog/smklog-sdk/tree/main/go
-    name: Go SDK (module github.com/smklog/smklog-sdk/go)
   - type: CLI
     url: https://pypi.org/project/smklog-sdk/#command-line
-    name: smklog command line (ships with the Python package)
-- aid: smklog-com:smklog-com-status-api
-  name: SMKlog Status API
-  description: The Status API from SMKlog — 1 operation(s) for status.
+- aid: smklog-com:smklog-com-quotes-api
+  name: SMKlog Quotes API
+  description: Live parcel rate quotes from a US origin.
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
-  - Status
+  - quotes
   properties:
   - type: OpenAPI
-    url: openapi/smklog-com-status-api-openapi.yml
+    url: openapi/smklog-com-quotes-api-openapi.yml
   - type: Documentation
     url: https://smklog.com/api
   - type: APIReference
@@ -333,82 +281,58 @@ apis:
     url: https://smklog.com/developers/postman/smklog-quote-api.postman_collection.json
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/quote-request.schema.json
-    name: QuoteRequest schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/package.schema.json
-    name: Package schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/rate.schema.json
-    name: Rate schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/quote-response.schema.json
-    name: QuoteResponse schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-session-request.schema.json
-    name: CheckoutSessionRequest schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-session.schema.json
-    name: CheckoutSession schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/checkout-status.schema.json
-    name: CheckoutStatus schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/liveness.schema.json
-    name: Liveness schema
   - type: JSONSchema
     url: https://smklog.com/developers/schemas/problem.schema.json
-    name: Problem schema
   - type: JSONLD
     url: https://smklog.com/developers/schemas/context.jsonld
   - type: Vocabulary
     url: https://smklog.com/developers/vocabulary.yaml
   - type: SpectralRules
     url: https://smklog.com/developers/spectral.yaml
-  - type: Overlay
-    url: https://smklog.com/developers/overlay.yaml
   - type: StatusPage
     url: https://smklog.com/developers/status
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-session-request-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-session-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-checkout-status-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-liveness-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-package-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-problem-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-quote-request-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-quote-response-schema.json
-    name: Provider-published copy
   - type: JSONSchema
     url: json-schema/smklog-com-rate-schema.json
-    name: Provider-published copy
   - type: JSONLD
     url: json-ld/smklog-com-context.jsonld
   - type: SDK
     url: https://www.npmjs.com/package/smklog
-    name: 'JavaScript / TypeScript SDK (npm: smklog)'
   - type: SDK
     url: https://pypi.org/project/smklog-sdk/
-    name: 'Python SDK (PyPI: smklog-sdk)'
   - type: SDK
     url: https://github.com/smklog/smklog-sdk/tree/main/go
-    name: Go SDK (module github.com/smklog/smklog-sdk/go)
   - type: CLI
     url: https://pypi.org/project/smklog-sdk/#command-line
-    name: smklog command line (ships with the Python package)
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
