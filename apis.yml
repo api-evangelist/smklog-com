@@ -45,6 +45,8 @@ apis:
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
+  - Checkout
+  tags_raw:
   - checkout
   properties:
   - type: OpenAPI
@@ -142,7 +144,8 @@ apis:
   description: Liveness.
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
-  tags:
+  tags: []
+  tags_raw:
   - operations
   properties:
   - type: OpenAPI
@@ -241,6 +244,8 @@ apis:
   humanURL: https://smklog.com/api
   baseURL: https://quote-api.smklog.com
   tags:
+  - Quotes
+  tags_raw:
   - quotes
   properties:
   - type: OpenAPI
