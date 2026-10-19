@@ -3,8 +3,14 @@
   "$id": "https://smklog.com/developers/schemas/checkout-session-request.schema.json",
   "title": "CheckoutSessionRequest",
   "type": "object",
-  "description": "The shipment to open a checkout for: a quote_id from a previous quote, or the shipment itself.",
+  "description": "The shipment to open a checkout for: a quote_id from a previous quote, or the shipment itself. Optionally your own external_id, which makes the call a create-or-update.",
   "properties": {
+    "external_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,100}$",
+      "description": "Your own key for this session, such as an order or cart id. With it the call is a create-or-update: it creates the session if none exists for this external_id, and re-prices that session in place if one does. Needs a bearer token from /oauth/token, because the OAuth client is what scopes the key: without one the call answers 401 token_required. Without external_id every call creates a new session, token or not. Retries are idempotent: the same external_id never creates a duplicate session, it updates the one stored under it, or answers 409 once the human has started its checkout.",
+      "example": "cart-10442"
+    },
     "quote_id": {
       "type": "string",
       "description": "The quote_id a getParcelQuote answer carries (the get_parcel_quote tool returns the same handle), valid 15 minutes. When given, the shipment comes from that quote and product, from_zip, to_zip, to_country and quantity are ignored; an expired handle prices the fields live."
@@ -45,12 +51,31 @@
     "service": {
       "type": "string",
       "description": "Optional service to anchor the amount, matched as a case-insensitive fragment of the display name; cheapest when omitted or unmatched."
+    },
+    "callback_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri",
+      "maxLength": 500,
+      "description": "Optional webhook. An https URL SMKlog POSTs a WebhookEvent to each time the session reaches a new stage (checkout_started, paid, label_ready, delivered, refunded, cancelled), signed with callback_secret; see the webhooks section. Must name a public host: IP addresses, private names and smklog.com hosts answer 400 invalid_request. On an update by external_id, omit it to keep the stored webhook and send null to remove it. Deliveries are retried up to 7 times over about 18 hours until the endpoint answers 2xx."
+    },
+    "callback_secret": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._~+/=-]{16,128}$",
+      "description": "Optional HMAC key for the X-Smklog-Signature header, 16 to 128 characters. Omit it with a callback_url and SMKlog generates one and returns it once, in callback_secret of this answer; store it, it is never shown again."
+    },
+    "dry_run": {
+      "type": "boolean",
+      "default": false,
+      "description": "True prices the shipment and validates everything exactly as the real call would, and stores nothing: the answer carries dry_run true, session_id and handoff_url null, and created says which branch the real call would take. A dry run spends a carrier call unless quote_id is given, and draws on the same hourly allowance."
     }
   },
   "x-provenance": {
     "method": "published",
     "publisher": "SMKlog (SMKLOG-2022 LLC)",
     "source": "https://quote-api.smklog.com/openapi.json",
-    "published": "2026-10-12"
+    "published": "2026-10-19"
   }
 }

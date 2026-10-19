@@ -3,10 +3,10 @@
  "requested_url": "https://quote-api.smklog.com/openapi.json",
  "status": 200,
  "content_type": "application/openapi+json",
- "bytes": 35302,
- "sha256": "19dd4b699c91c2bacd9c5d42052a7a038ca442799e4db42b7505a2bd85ebeeec",
- "fetched_at": "2026-10-13",
- "fetched_by": "SMKlog (provider-submitted copy of its own live document; byte-identical to the URL on 2026-10-13)",
+ "bytes": 59806,
+ "sha256": "6beefffe47cb8926d78ec2c025a1590a040bb76074556feceb13846831934cf2",
+ "fetched_at": "2026-10-19",
+ "fetched_by": "SMKlog (provider-submitted copy of its own live document; byte-identical to the URL on 2026-10-19)",
  "match": "provider-submitted",
- "note": "Contract published 2026-10-12 and extended 2026-10-13: nine component schemas, examples on every operation, optional OAuth2 client_credentials scheme, Problem-shaped 4xx, x-provenance; QuoteResponse now carries quote_id, the handle createPaymentSession reuses. Same four operations and paths as the 2026-09-19 harvest."
+ "note": "Contract refresh 2026-10-19: every rate-limited operation documents the IETF RateLimit response headers (components.headers, referenced from each 200 and 429; Retry-After on 429) and the API sends them; external_id states that retries are idempotent; every operation carries an x-agentic-access execution contract, also published as agentic-access/smklog-com-agentic-access.yml; finops gains primary_unit. Same day: cancelPaymentSession (DELETE /agent/checkout-session/{session_id}, reversible until the human opens checkout), dry_run on createPaymentSession, and signed webhooks (callback_url, OpenAPI 3.1 webhooks section, WebhookEvent) with a Webhooks pointer; trust pointers GlobalPrivacyControl, TrainingDataSummary, AITransparency, NoticeAndAction, AccessibilityConformance, AgeAssurance. The 2026-10-14 create-or-update (external_id, created, 409 session_in_checkout) is in this copy too; the record's previous copy predates it."
 }

@@ -1,0 +1,53 @@
+{
+  "operationId": "cancelPaymentSession",
+  "method": "DELETE",
+  "path": "/agent/checkout-session/{session_id}",
+  "responses": {
+    "200": [
+      {
+        "name": "default",
+        "value": {
+          "session_id": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33",
+          "status": "cancelled",
+          "created_at": "2026-10-12T15:04:05.000Z",
+          "expires_at": "2026-11-11T15:04:05.000Z",
+          "amount": 38.42,
+          "currency": "USD",
+          "service": "USPS Ground Advantage",
+          "quote_reused": true,
+          "cancelled_at": "2026-10-12T15:06:30.000Z",
+          "checkout": null,
+          "next": "Cancelled by the agent. The handoff link no longer binds a checkout to this session; create a new session for a new attempt."
+        }
+      }
+    ],
+    "404": [
+      {
+        "name": "default",
+        "value": {
+          "error": "session_not_found",
+          "message": "Unknown or expired session_id. Sessions live 30 days from creation."
+        }
+      }
+    ],
+    "409": [
+      {
+        "name": "default",
+        "value": {
+          "error": "session_in_checkout",
+          "message": "The human has already opened the checkout of this session, so it cannot be cancelled here. An unpaid checkout simply expires; a paid one is refunded by SMKlog support (info@smklog.com) against the order_id getCheckoutStatus reports.",
+          "session_id": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33"
+        }
+      }
+    ],
+    "429": [
+      {
+        "name": "default",
+        "value": {
+          "error": "rate_limited",
+          "message": "Too many Smart Quote API requests from this client. Try again later."
+        }
+      }
+    ]
+  }
+}

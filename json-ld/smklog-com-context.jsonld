@@ -11,6 +11,7 @@
     "CheckoutSessionRequest": "smk:CheckoutSessionRequest",
     "CheckoutSession": "smk:CheckoutSession",
     "CheckoutStatus": "smk:CheckoutStatus",
+    "WebhookEvent": "smk:WebhookEvent",
     "Liveness": "smk:Liveness",
     "Problem": "smk:Problem",
     "product": {
@@ -152,6 +153,10 @@
     "source": {
       "@id": "smk:source"
     },
+    "external_id": {
+      "@id": "smk:external_id",
+      "@type": "xsd:string"
+    },
     "from_zip": {
       "@id": "smk:from_zip",
       "@type": "xsd:string"
@@ -164,6 +169,18 @@
       "@id": "smk:to_country",
       "@type": "xsd:string"
     },
+    "callback_url": {
+      "@id": "smk:callback_url",
+      "@type": "@id"
+    },
+    "callback_secret": {
+      "@id": "smk:callback_secret",
+      "@type": "xsd:string"
+    },
+    "dry_run": {
+      "@id": "smk:dry_run",
+      "@type": "xsd:boolean"
+    },
     "intent": {
       "@id": "smk:intent",
       "@type": "xsd:string"
@@ -171,6 +188,10 @@
     "session_id": {
       "@id": "smk:session_id",
       "@type": "xsd:string"
+    },
+    "created": {
+      "@id": "smk:created",
+      "@type": "xsd:boolean"
     },
     "method": {
       "@id": "smk:method",
@@ -239,9 +260,24 @@
       "@id": "smk:delivered_at",
       "@type": "xsd:dateTime"
     },
+    "cancelled_at": {
+      "@id": "smk:cancelled_at",
+      "@type": "xsd:dateTime"
+    },
     "next": {
       "@id": "smk:next",
       "@type": "xsd:string"
+    },
+    "id": {
+      "@id": "smk:id",
+      "@type": "xsd:string"
+    },
+    "event": {
+      "@id": "smk:event",
+      "@type": "xsd:string"
+    },
+    "data": {
+      "@id": "smk:data"
     },
     "ok": {
       "@id": "smk:ok",
@@ -275,10 +311,10 @@
     "method": "published",
     "publisher": "SMKlog (SMKLOG-2022 LLC)",
     "source": "https://smklog.com/developers/schemas/context.jsonld",
-    "published": "2026-10-12"
+    "published": "2026-10-19"
   },
   "x-summary": {
-    "classes": 9,
-    "properties": 65
+    "classes": 10,
+    "properties": 74
   }
 }

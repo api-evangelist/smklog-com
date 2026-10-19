@@ -21,9 +21,10 @@
         "paid",
         "label_ready",
         "delivered",
-        "refunded"
+        "refunded",
+        "cancelled"
       ],
-      "description": "Stage, in that order"
+      "description": "Stage, in that order; cancelled when cancelPaymentSession ended the session before the human opened checkout"
     },
     "created_at": {
       "type": "string",
@@ -123,6 +124,14 @@
         }
       }
     },
+    "cancelled_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "When cancelPaymentSession cancelled the session; null otherwise"
+    },
     "next": {
       "type": "string",
       "description": "What, if anything, the agent should do now"
@@ -132,6 +141,6 @@
     "method": "published",
     "publisher": "SMKlog (SMKLOG-2022 LLC)",
     "source": "https://quote-api.smklog.com/openapi.json",
-    "published": "2026-10-12"
+    "published": "2026-10-19"
   }
 }

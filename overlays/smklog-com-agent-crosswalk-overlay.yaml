@@ -12,7 +12,7 @@
 overlay: 1.0.0
 info:
   title: SMKlog Quote API — agent crosswalk overlay
-  version: '2026-10-12'
+  version: '2026-10-14'
   description: >-
     Adds x-mcp-tool, x-a2a-skill and x-rate-limit to the four operations of the SMKlog Quote API. Maintained
     by SMKlog beside the contract (method: authored).
@@ -40,7 +40,7 @@ actions:
       x-a2a-skill: get_parcel_quote
       x-rate-limit: quote bucket, about 80 requests an hour per client, shared with the MCP endpoint
   - target: $.paths['/agent/checkout-session'].post
-    description: createPaymentSession is the create_checkout_link tool and the create_checkout_link A2A skill; it spends the quote bucket only when it prices live.
+    description: createPaymentSession is the create_checkout_link tool and the create_checkout_link A2A skill; it spends the quote bucket only when it prices live. The external_id create-or-update is REST only; the tool and the skill create a new session on every call.
     update:
       x-mcp-tool: create_checkout_link
       x-a2a-skill: create_checkout_link
@@ -51,6 +51,11 @@ actions:
       x-mcp-tool: get_checkout_status
       x-a2a-skill: get_checkout_status
       x-rate-limit: 60 checks an hour per client
+  - target: $.paths['/agent/checkout-session/{session_id}'].delete
+    description: cancelPaymentSession is REST only (no tool, no skill); it shares the status bucket with getCheckoutStatus and spends no quote capacity.
+    update:
+      x-mcp-tool: null
+      x-rate-limit: 60 calls an hour per client, shared with getCheckoutStatus
   - target: $.paths['/status'].get
     description: The liveness probe has no tool and no bucket.
     update:
