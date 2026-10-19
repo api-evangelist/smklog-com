@@ -15,7 +15,7 @@ x-tier: profiled
 x-tier-reason: full-pipeline enrichment 2026-09-19 from the live smklog.com and quote-api.smklog.com surface
 specificationVersion: '0.20'
 created: '2026-09-19'
-modified: '2026-10-12'
+modified: '2026-10-19'
 tags:
 - Company
 - Shipping
@@ -430,6 +430,8 @@ common:
   url: https://smklog.com/pricing
 - type: FinOps
   url: https://smklog.com/developers/finops.yaml
+- type: AgenticAccess
+  url: https://smklog.com/developers/agentic-access.yaml
 - type: RateLimits
   url: https://smklog.com/developers/rate-limits
 - type: RateLimits
@@ -497,6 +499,8 @@ common:
 - type: FinOps
   url: finops/smklog-com-finops.yml
   name: Provider-published copy (first-party)
+- type: AgenticAccess
+  url: agentic-access/smklog-com-agentic-access.yml
 - type: JSONLD
   url: json-ld/smklog-com-context.jsonld
   name: Provider-published copy (first-party)
@@ -524,6 +528,27 @@ common:
 - type: CLI
   url: https://pypi.org/project/smklog-sdk/#command-line
   name: smklog command line (ships with the Python package)
+- type: Webhooks
+  url: https://smklog.com/developers/webhooks
+  name: Payment session webhooks (signed, retried)
+- type: GlobalPrivacyControl
+  url: https://smklog.com/trust/global-privacy-control
+  name: Global Privacy Control honoured (statement and scope)
+- type: TrainingDataSummary
+  url: https://smklog.com/trust/training-data
+  name: Models and training data
+- type: AITransparency
+  url: https://smklog.com/trust/training-data
+  name: Where automated estimation is used and what a human decides
+- type: NoticeAndAction
+  url: https://smklog.com/trust/notice-and-action
+  name: Reporting illegal content or misuse
+- type: AccessibilityConformance
+  url: https://smklog.com/trust/accessibility
+  name: Accessibility statement (audited 2026-10-19)
+- type: AgeAssurance
+  url: https://smklog.com/terms#age
+  name: Age requirement in the terms of service
 x-enrichment:
   date: '2026-09-19'
   status: enriched
@@ -561,8 +586,13 @@ x-provenance:
   note: The provider self-hosts this index at the source URL; every artifact added on 2026-10-12 carries method/publisher/source
     markers and is served first-party on smklog.com.
 x-provider-update:
-  date: '2026-10-12'
+  date: '2026-10-19'
   by: SMKlog (info@smklog.com)
-  note: 'Full record update: url now the self-hosted APIs.json; provider-published artifacts added as files (rules, vocabulary,
-    finops, json-ld, json-schema, examples, postman, overlay) and as pointers; rate-limits gains the third bucket; openapi/_original
-    refreshed with the 2026-10-12 contract. See docs/catalogs/apis-io/README.md in github.com/smklog/tony.'
+  note: 'Contract refresh 2026-10-19: every rate-limited operation documents the IETF RateLimit response headers (components.headers,
+    referenced from each 200 and 429; Retry-After on 429) and the API sends them; external_id states that retries are idempotent;
+    every operation carries an x-agentic-access execution contract, also published as agentic-access/smklog-com-agentic-access.yml;
+    finops gains primary_unit. Same day: cancelPaymentSession (DELETE /agent/checkout-session/{session_id}, reversible until
+    the human opens checkout), dry_run on createPaymentSession, and signed webhooks (callback_url, OpenAPI 3.1 webhooks section,
+    WebhookEvent) with a Webhooks pointer; trust pointers GlobalPrivacyControl, TrainingDataSummary, AITransparency, NoticeAndAction,
+    AccessibilityConformance, AgeAssurance. The 2026-10-14 create-or-update (external_id, created, 409 session_in_checkout)
+    is in this copy too; the record''s previous copy predates it.'

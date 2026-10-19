@@ -21,6 +21,40 @@
         "to_country": "US",
         "quantity": 1
       }
+    },
+    {
+      "name": "upsertByExternalId",
+      "summary": "Create or update by your own key (external_id)",
+      "value": {
+        "external_id": "cart-10442",
+        "product": "Yamaha FG800 acoustic guitar in a hard case",
+        "from_zip": "07102",
+        "to_zip": "30303",
+        "to_country": "US",
+        "quantity": 1
+      }
+    },
+    {
+      "name": "withWebhook",
+      "summary": "Reuse a quote and hear about every later stage at your callback_url",
+      "value": {
+        "quote_id": "q_8f3c2e1a4b7d",
+        "service": "USPS Ground Advantage",
+        "callback_url": "https://agent.example.com/hooks/smklog",
+        "callback_secret": "whsec_9f1c2d3e4b5a6978a0b1"
+      }
+    },
+    {
+      "name": "dryRun",
+      "summary": "Price and validate without storing a session",
+      "value": {
+        "dry_run": true,
+        "product": "paperback books",
+        "from_zip": "07030",
+        "to_zip": "33101",
+        "to_country": "US",
+        "quantity": 1
+      }
     }
   ]
 }

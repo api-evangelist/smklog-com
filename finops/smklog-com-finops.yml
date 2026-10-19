@@ -14,8 +14,11 @@ provider: SMKlog
 providerId: smklog-com
 publisherName: SMKlog
 serviceCategory: Parcel shipping labels
+# The one unit money is counted in: a label. Every other meter is free or a
+# pass-through of the carrier's own charge.
+primary_unit: label
 created: '2026-10-12'
-modified: '2026-10-12'
+modified: '2026-10-19'
 sources:
   - https://smklog.com/pricing
   - https://smklog.com/terms

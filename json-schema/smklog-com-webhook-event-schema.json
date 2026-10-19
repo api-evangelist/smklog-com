@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://smklog.com/developers/schemas/webhook-event.schema.json",
+  "title": "WebhookEvent",
+  "type": "object",
+  "description": "What SMKlog POSTs to a session's callback_url each time the session reaches a new stage. The body carries the current CheckoutStatus under data, so a consumer needs no second call.",
+  "required": [
+    "id",
+    "event",
+    "created_at",
+    "session_id",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^wh_[A-Za-z0-9-]{8,80}$",
+      "description": "Delivery id, also sent as X-Smklog-Delivery. The same id on every retry of one event, so consumers can deduplicate."
+    },
+    "event": {
+      "type": "string",
+      "enum": [
+        "payment_session.checkout_started",
+        "payment_session.paid",
+        "payment_session.label_ready",
+        "payment_session.delivered",
+        "payment_session.refunded",
+        "payment_session.cancelled"
+      ],
+      "description": "The stage reached, also sent as X-Smklog-Event"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the stage was observed"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "The session the event belongs to"
+    },
+    "data": {
+      "$ref": "https://smklog.com/developers/schemas/checkout-status.schema.json"
+    }
+  },
+  "x-provenance": {
+    "method": "published",
+    "publisher": "SMKlog (SMKLOG-2022 LLC)",
+    "source": "https://quote-api.smklog.com/openapi.json",
+    "published": "2026-10-19"
+  }
+}

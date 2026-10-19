@@ -26,6 +26,14 @@
       "pattern": "^as_[A-Za-z0-9-]{8,80}$",
       "description": "Handle for getCheckoutStatus, shaped as_ plus a UUID, good for 30 days. Null only when the session record could not be stored."
     },
+    "created": {
+      "type": "boolean",
+      "description": "Which branch ran: true when this call created the session, false when it updated the session already stored under your external_id. Always true without external_id. Absent only when session_id is null, because then nothing was stored."
+    },
+    "external_id": {
+      "type": "string",
+      "description": "The external_id you sent, echoed back; absent when you sent none."
+    },
     "method": {
       "type": "array",
       "items": {
@@ -49,9 +57,25 @@
       "description": "The service the amount is anchored to"
     },
     "handoff_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uri",
+      "description": "Opens the SMKlog checkout prefilled with this shipment; null on a dry run"
+    },
+    "dry_run": {
+      "type": "boolean",
+      "description": "True when the call was a dry run: priced and validated, nothing stored, session_id and handoff_url null."
+    },
+    "callback_url": {
       "type": "string",
       "format": "uri",
-      "description": "Opens the SMKlog checkout prefilled with this shipment"
+      "description": "The webhook URL stored on the session; absent when none is stored."
+    },
+    "callback_secret": {
+      "type": "string",
+      "description": "Present only in the answer that generated it (callback_url sent without callback_secret): the HMAC key the X-Smklog-Signature header is computed with. Shown once."
     },
     "identified_product_title": {
       "type": "string",
@@ -70,6 +94,6 @@
     "method": "published",
     "publisher": "SMKlog (SMKLOG-2022 LLC)",
     "source": "https://quote-api.smklog.com/openapi.json",
-    "published": "2026-10-12"
+    "published": "2026-10-19"
   }
 }

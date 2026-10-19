@@ -21,7 +21,7 @@
   "method": "published",
   "publisher": "SMKlog (SMKLOG-2022 LLC)",
   "source": "https://quote-api.smklog.com/openapi.json",
-  "published": "2026-10-12"
+  "published": "2026-10-19"
  },
  "servers": [
   {
@@ -58,6 +58,16 @@
     "tags": [
      "quotes"
     ],
+    "x-agentic-access": {
+     "action-class": "connected",
+     "consequence": "read",
+     "subject": "optional",
+     "audience": "https://quote-api.smklog.com",
+     "token": {
+      "max-ttl": 3600
+     },
+     "audit": "none"
+    },
     "summary": "Price one parcel from a US origin across USPS, UPS and FedEx (plus DHL Express to Germany and Australia)",
     "description": "Prices one shipment live against the carriers for the lane. Name the item in plain words and the packed box is estimated server-side (the estimate, its confidence and its assumptions come back in package); send length_cm, width_cm, height_cm, weight_kg and package_source \"manual\" to price an exact box instead. Up to five purchasable services come back, each a checkout total with the SMKlog fee inside and the carrier counter price beside it. One call per shipment: every call spends a live carrier rating.",
     "requestBody": {
@@ -98,6 +108,20 @@
     "responses": {
      "200": {
       "description": "Priced (mode parcel_label_ready, up to 5 rates), not a parcel (mode not_a_parcel, empty rates — SMKlog does not arrange pallet or freight shipments), more than one box (mode multiple_boxes, empty rates — quote each box on its own), or restricted (empty rates with an explanation).",
+      "headers": {
+       "RateLimit-Limit": {
+        "$ref": "#/components/headers/RateLimit-Limit"
+       },
+       "RateLimit-Remaining": {
+        "$ref": "#/components/headers/RateLimit-Remaining"
+       },
+       "RateLimit-Reset": {
+        "$ref": "#/components/headers/RateLimit-Reset"
+       },
+       "RateLimit-Policy": {
+        "$ref": "#/components/headers/RateLimit-Policy"
+       }
+      },
       "content": {
        "application/json": {
         "schema": {
@@ -215,7 +239,7 @@
       }
      },
      "429": {
-      "description": "rate_limited. Slow down; the same buckets cover /quote and /mcp (about 80 quote requests an hour per client).",
+      "description": "rate_limited. Slow down; the same buckets cover /quote and /mcp (about 80 quote requests an hour per client). RateLimit-Reset and Retry-After say how many seconds until the hourly window turns.",
       "content": {
        "application/json": {
         "schema": {
@@ -225,6 +249,23 @@
          "error": "rate_limited",
          "message": "Too many Smart Quote API requests from this client. Try again later."
         }
+       }
+      },
+      "headers": {
+       "RateLimit-Limit": {
+        "$ref": "#/components/headers/RateLimit-Limit"
+       },
+       "RateLimit-Remaining": {
+        "$ref": "#/components/headers/RateLimit-Remaining"
+       },
+       "RateLimit-Reset": {
+        "$ref": "#/components/headers/RateLimit-Reset"
+       },
+       "RateLimit-Policy": {
+        "$ref": "#/components/headers/RateLimit-Policy"
+       },
+       "Retry-After": {
+        "$ref": "#/components/headers/Retry-After"
        }
       }
      }
@@ -237,8 +278,25 @@
     "tags": [
      "checkout"
     ],
-    "summary": "Create a payment session for one parcel label (MPP intent \"session\")",
-    "description": "Prices the shipment live, anchors the amount to one service, and returns a handoff URL opening the SMKlog checkout prefilled with the shipment. The human confirms the contents certification and the carrier-adjustment consent there and pays on Stripe hosted checkout. This operation never charges: the agent prepares, the human pays. Pass the quote_id from getParcelQuote and the session reuses that quote instead of spending a second carrier call.",
+    "x-agentic-access": {
+     "action-class": "acting",
+     "consequence": "write",
+     "subject": "optional",
+     "audience": "https://quote-api.smklog.com",
+     "token": {
+      "max-ttl": 3600,
+      "exchange": false,
+      "purpose-required": false,
+      "proof-of-possession": false
+     },
+     "escalation": {
+      "human-in-the-loop": "required"
+     },
+     "audit": "required",
+     "note": "Stores a priced payment session and returns a handoff URL; no money moves. The human completes consent and payment on smklog.com, so the agent never needs a subject identity and cannot charge anyone. Every session is recorded with its session_id and is readable through getCheckoutStatus for 30 days."
+    },
+    "summary": "Create or update (upsert) a payment session for one parcel label (MPP intent \"session\")",
+    "description": "Prices the shipment live, anchors the amount to one service, and returns a handoff URL opening the SMKlog checkout prefilled with the shipment. The human confirms the contents certification and the carrier-adjustment consent there and pays on Stripe hosted checkout. This operation never charges: the agent prepares, the human pays. Pass the quote_id from getParcelQuote and the session reuses that quote instead of spending a second carrier call. Create-or-update: send your own external_id (an order or cart id) and the call creates the session if it does not exist for that external_id, or re-prices it in place if it does (same session_id; new amount, service and handoff_url). created in the answer says which branch ran. A session whose checkout the human has already started is not changed: that call answers 409 session_in_checkout with its session_id. Without external_id every call creates a new session. external_id needs a bearer token from /oauth/token and is scoped to that OAuth client, so another client sending the same id reaches a different session; without a token it answers 401 token_required. Retries with the same external_id are idempotent: a timeout or a repeated call never creates a duplicate session. A session lives 30 days from its last create or update; after that the same external_id creates a new one. Optional callback_url: SMKlog POSTs each later stage of the session to it, signed (see the webhooks section), so nothing needs polling. Optional dry_run: price and validate without storing anything. cancelPaymentSession reverses a session the human has not opened yet.",
     "x-payment-info": {
      "intent": "session",
      "method": "stripe",
@@ -279,6 +337,37 @@
           "to_country": "US",
           "quantity": 1
          }
+        },
+        "upsertByExternalId": {
+         "summary": "Create or update by your own key (external_id)",
+         "value": {
+          "external_id": "cart-10442",
+          "product": "Yamaha FG800 acoustic guitar in a hard case",
+          "from_zip": "07102",
+          "to_zip": "30303",
+          "to_country": "US",
+          "quantity": 1
+         }
+        },
+        "withWebhook": {
+         "summary": "Reuse a quote and hear about every later stage at your callback_url",
+         "value": {
+          "quote_id": "q_8f3c2e1a4b7d",
+          "service": "USPS Ground Advantage",
+          "callback_url": "https://agent.example.com/hooks/smklog",
+          "callback_secret": "whsec_9f1c2d3e4b5a6978a0b1"
+         }
+        },
+        "dryRun": {
+         "summary": "Price and validate without storing a session",
+         "value": {
+          "dry_run": true,
+          "product": "paperback books",
+          "from_zip": "07030",
+          "to_zip": "33101",
+          "to_country": "US",
+          "quantity": 1
+         }
         }
        }
       }
@@ -286,7 +375,21 @@
     },
     "responses": {
      "200": {
-      "description": "The session: intent, method, amount, currency, service, handoff_url, session_id, note. Keep session_id for getCheckoutStatus.",
+      "description": "The session: intent, method, amount, currency, service, handoff_url, session_id, created, note. created is true when this call created the session and false when it updated the one stored under your external_id. Keep session_id for getCheckoutStatus.",
+      "headers": {
+       "RateLimit-Limit": {
+        "$ref": "#/components/headers/RateLimit-Limit"
+       },
+       "RateLimit-Remaining": {
+        "$ref": "#/components/headers/RateLimit-Remaining"
+       },
+       "RateLimit-Reset": {
+        "$ref": "#/components/headers/RateLimit-Reset"
+       },
+       "RateLimit-Policy": {
+        "$ref": "#/components/headers/RateLimit-Policy"
+       }
+      },
       "content": {
        "application/json": {
         "schema": {
@@ -295,6 +398,7 @@
         "example": {
          "intent": "session",
          "session_id": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33",
+         "created": true,
          "method": [
           "stripe",
           "card"
@@ -311,7 +415,7 @@
       }
      },
      "400": {
-      "description": "invalid_json or invalid_request — the body is not the documented shape.",
+      "description": "invalid_json — the body is not JSON; invalid_request — external_id is not 1 to 100 letters, digits, dots, underscores, colons or hyphens.",
       "content": {
        "application/json": {
         "schema": {
@@ -319,13 +423,43 @@
         },
         "example": {
          "error": "invalid_request",
-         "message": "JSON object body required."
+         "message": "external_id must be 1 to 100 letters, digits, dots, underscores, colons or hyphens."
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "token_required — external_id was sent without a bearer token; invalid_token — the bearer token is expired, revoked or unknown. The OAuth client is what scopes external_id, so the create-or-update needs a token from /oauth/token. Without external_id this operation does not read the token.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        },
+        "example": {
+         "error": "token_required",
+         "message": "external_id needs a bearer token from /oauth/token: the OAuth client is what scopes it. Leave external_id out to create a new session without one."
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "session_in_checkout — the session stored under this external_id already has a checkout the human started, so it was not changed. Read it with getCheckoutStatus, or send a new external_id for a different shipment.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        },
+        "example": {
+         "error": "session_in_checkout",
+         "message": "The human has already started the checkout of the session stored under this external_id, so it was not changed. Read it with getCheckoutStatus, or send a new external_id for a different shipment.",
+         "session_id": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33",
+         "external_id": "cart-10442"
         }
        }
       }
      },
      "422": {
-      "description": "session_failed — unpriceable, restricted, not a parcel, or more than one box.",
+      "description": "session_failed — required fields missing or invalid, unpriceable, restricted, not a parcel, or more than one box.",
       "content": {
        "application/json": {
         "schema": {
@@ -339,7 +473,7 @@
       }
      },
      "429": {
-      "description": "rate_limited. Slow down; the same buckets cover /quote and /mcp (about 80 quote requests an hour per client).",
+      "description": "rate_limited. Slow down; the same buckets cover /quote and /mcp (about 80 quote requests an hour per client). RateLimit-Reset and Retry-After say how many seconds until the hourly window turns.",
       "content": {
        "application/json": {
         "schema": {
@@ -349,6 +483,23 @@
          "error": "rate_limited",
          "message": "Too many Smart Quote API requests from this client. Try again later."
         }
+       }
+      },
+      "headers": {
+       "RateLimit-Limit": {
+        "$ref": "#/components/headers/RateLimit-Limit"
+       },
+       "RateLimit-Remaining": {
+        "$ref": "#/components/headers/RateLimit-Remaining"
+       },
+       "RateLimit-Reset": {
+        "$ref": "#/components/headers/RateLimit-Reset"
+       },
+       "RateLimit-Policy": {
+        "$ref": "#/components/headers/RateLimit-Policy"
+       },
+       "Retry-After": {
+        "$ref": "#/components/headers/Retry-After"
        }
       }
      }
@@ -361,8 +512,18 @@
     "tags": [
      "checkout"
     ],
+    "x-agentic-access": {
+     "action-class": "connected",
+     "consequence": "read",
+     "subject": "optional",
+     "audience": "https://quote-api.smklog.com",
+     "token": {
+      "max-ttl": 3600
+     },
+     "audit": "none"
+    },
     "summary": "Read where a payment session stands",
-    "description": "The stage of the checkout a payment session led to: awaiting_checkout, checkout_started, paid, label_ready (with the tracking number), delivered or refunded. Reads SMKlog order records only, no carrier call. Sessions live 30 days; an unknown or expired id answers 404 session_not_found. The answer never carries names, addresses or emails.",
+    "description": "The stage of the checkout a payment session led to: awaiting_checkout, checkout_started, paid, label_ready (with the tracking number), delivered, refunded, or cancelled (by cancelPaymentSession). Reads SMKlog order records only, no carrier call. Sessions live 30 days; an unknown or expired id answers 404 session_not_found. The answer never carries names, addresses or emails.",
     "parameters": [
      {
       "name": "session_id",
@@ -379,6 +540,20 @@
     "responses": {
      "200": {
       "description": "session_id, status, created_at, expires_at, amount, currency, service, checkout (order_id, paid, label_ready, carrier, service, tracking_number, tracking_status, estimated_delivery, delivered_at) and next.",
+      "headers": {
+       "RateLimit-Limit": {
+        "$ref": "#/components/headers/RateLimit-Limit"
+       },
+       "RateLimit-Remaining": {
+        "$ref": "#/components/headers/RateLimit-Remaining"
+       },
+       "RateLimit-Reset": {
+        "$ref": "#/components/headers/RateLimit-Reset"
+       },
+       "RateLimit-Policy": {
+        "$ref": "#/components/headers/RateLimit-Policy"
+       }
+      },
       "content": {
        "application/json": {
         "schema": {
@@ -393,6 +568,7 @@
          "currency": "USD",
          "service": "USPS Ground Advantage",
          "quote_reused": true,
+         "cancelled_at": null,
          "checkout": {
           "order_id": "c1d2e3f4-5a6b-4c7d-8e9f-0a1b2c3d4e5f",
           "started_at": "2026-10-12T15:09:41.000Z",
@@ -426,7 +602,7 @@
       }
      },
      "429": {
-      "description": "rate_limited — 60 checks an hour per client.",
+      "description": "rate_limited — 60 checks an hour per client. RateLimit-Reset and Retry-After say how many seconds until the hourly window turns.",
       "content": {
        "application/json": {
         "schema": {
@@ -436,6 +612,157 @@
          "error": "rate_limited",
          "message": "Too many Smart Quote API requests from this client. Try again later."
         }
+       }
+      },
+      "headers": {
+       "RateLimit-Limit": {
+        "$ref": "#/components/headers/RateLimit-Limit"
+       },
+       "RateLimit-Remaining": {
+        "$ref": "#/components/headers/RateLimit-Remaining"
+       },
+       "RateLimit-Reset": {
+        "$ref": "#/components/headers/RateLimit-Reset"
+       },
+       "RateLimit-Policy": {
+        "$ref": "#/components/headers/RateLimit-Policy"
+       },
+       "Retry-After": {
+        "$ref": "#/components/headers/Retry-After"
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "operationId": "cancelPaymentSession",
+    "tags": [
+     "checkout"
+    ],
+    "x-agentic-access": {
+     "action-class": "acting",
+     "consequence": "write",
+     "subject": "optional",
+     "audience": "https://quote-api.smklog.com",
+     "token": {
+      "max-ttl": 3600,
+      "exchange": false,
+      "purpose-required": false,
+      "proof-of-possession": false
+     },
+     "audit": "required",
+     "note": "Reverses createPaymentSession while the session is still awaiting_checkout: nothing has been paid at that stage, so no human is needed in the loop. From checkout_started on the call is refused with 409 and the human's checkout stands."
+    },
+    "summary": "Cancel a payment session before the human opens its checkout",
+    "description": "Reverses createPaymentSession while nothing has happened on the human side. A session in awaiting_checkout is marked cancelled: its handoff link stops binding a checkout to it, its external_id is released for a new session, getCheckoutStatus answers status cancelled with cancelled_at, and a callback_url hears payment_session.cancelled. Window: until the human opens the handoff link. From checkout_started on the call answers 409 session_in_checkout and nothing changes; an unpaid checkout simply expires with the session, and a paid one is refunded by SMKlog support against the order_id getCheckoutStatus reports, never through this API. Idempotent: cancelling a cancelled session answers 200 with the same status. No carrier call and no quote allowance; the status bucket (60 an hour per client) applies.",
+    "parameters": [
+     {
+      "name": "session_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "pattern": "^as_[A-Za-z0-9-]{8,80}$"
+      },
+      "description": "The session_id returned by createPaymentSession.",
+      "example": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "The session, now cancelled: status cancelled, cancelled_at set, checkout null. The same answer again when it was already cancelled.",
+      "headers": {
+       "RateLimit-Limit": {
+        "$ref": "#/components/headers/RateLimit-Limit"
+       },
+       "RateLimit-Remaining": {
+        "$ref": "#/components/headers/RateLimit-Remaining"
+       },
+       "RateLimit-Reset": {
+        "$ref": "#/components/headers/RateLimit-Reset"
+       },
+       "RateLimit-Policy": {
+        "$ref": "#/components/headers/RateLimit-Policy"
+       }
+      },
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CheckoutStatus"
+        },
+        "example": {
+         "session_id": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33",
+         "status": "cancelled",
+         "created_at": "2026-10-12T15:04:05.000Z",
+         "expires_at": "2026-11-11T15:04:05.000Z",
+         "amount": 38.42,
+         "currency": "USD",
+         "service": "USPS Ground Advantage",
+         "quote_reused": true,
+         "cancelled_at": "2026-10-12T15:06:30.000Z",
+         "checkout": null,
+         "next": "Cancelled by the agent. The handoff link no longer binds a checkout to this session; create a new session for a new attempt."
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "session_not_found — unknown, malformed or expired session_id.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        },
+        "example": {
+         "error": "session_not_found",
+         "message": "Unknown or expired session_id. Sessions live 30 days from creation."
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "session_in_checkout — the human has already opened the checkout of this session, so it cannot be cancelled here; an unpaid checkout expires on its own, a paid one is refunded by support.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        },
+        "example": {
+         "error": "session_in_checkout",
+         "message": "The human has already opened the checkout of this session, so it cannot be cancelled here. An unpaid checkout simply expires; a paid one is refunded by SMKlog support (info@smklog.com) against the order_id getCheckoutStatus reports.",
+         "session_id": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33"
+        }
+       }
+      }
+     },
+     "429": {
+      "description": "rate_limited — 60 calls an hour per client, shared with getCheckoutStatus. RateLimit-Reset and Retry-After say how many seconds until the hourly window turns.",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Problem"
+        },
+        "example": {
+         "error": "rate_limited",
+         "message": "Too many Smart Quote API requests from this client. Try again later."
+        }
+       }
+      },
+      "headers": {
+       "RateLimit-Limit": {
+        "$ref": "#/components/headers/RateLimit-Limit"
+       },
+       "RateLimit-Remaining": {
+        "$ref": "#/components/headers/RateLimit-Remaining"
+       },
+       "RateLimit-Reset": {
+        "$ref": "#/components/headers/RateLimit-Reset"
+       },
+       "RateLimit-Policy": {
+        "$ref": "#/components/headers/RateLimit-Policy"
+       },
+       "Retry-After": {
+        "$ref": "#/components/headers/Retry-After"
        }
       }
      }
@@ -448,6 +775,13 @@
     "tags": [
      "operations"
     ],
+    "x-agentic-access": {
+     "action-class": "connected",
+     "consequence": "read",
+     "subject": "optional",
+     "audit": "none",
+     "note": "Unauthenticated liveness probe; no token is read."
+    },
     "summary": "Liveness probe",
     "description": "Answers 200 with the serving version while the service is up. Linked from the RFC 9727 api-catalog as the status relation; it carries no incident history — the status page at https://smklog.com/developers/status does.",
     "security": [
@@ -470,6 +804,104 @@
         }
        }
       }
+     }
+    }
+   }
+  }
+ },
+ "webhooks": {
+  "paymentSessionEvent": {
+   "post": {
+    "operationId": "paymentSessionEvent",
+    "summary": "A payment session reached a new stage (POSTed to your callback_url)",
+    "description": "Sent once per stage a session reaches after it was created with a callback_url: checkout_started, paid, label_ready, delivered, refunded, cancelled. The body is a WebhookEvent whose data is the CheckoutStatus of that moment. X-Smklog-Signature carries t=<unix seconds>,v1=<hex HMAC-SHA256 of \"<t>.<raw body>\" keyed with the session's callback_secret>: recompute it over the raw bytes, compare in constant time, and reject a t older than five minutes. Answer any 2xx within 8 seconds; anything else, a redirect, a timeout or a connection error is retried after 1, 5, 15, 60 minutes, 4 and 12 hours (7 attempts in all), with the same id and X-Smklog-Delivery each time, so deduplicate on id. Redirects are never followed. Order is not guaranteed across retries: read data.status rather than counting events.",
+    "parameters": [
+     {
+      "name": "X-Smklog-Signature",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "pattern": "^t=[0-9]+,v1=[a-f0-9]{64}$"
+      },
+      "description": "HMAC-SHA256 over \"<t>.<raw body>\" with your callback_secret, hex; t is the Unix time of this attempt.",
+      "example": "t=1760880000,v1=3b7f2a1c9d8e0f4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f9a0b1c2"
+     },
+     {
+      "name": "X-Smklog-Event",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "enum": [
+        "payment_session.checkout_started",
+        "payment_session.paid",
+        "payment_session.label_ready",
+        "payment_session.delivered",
+        "payment_session.refunded",
+        "payment_session.cancelled"
+       ]
+      },
+      "description": "Same value as event in the body."
+     },
+     {
+      "name": "X-Smklog-Delivery",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "pattern": "^wh_[A-Za-z0-9-]{8,80}$"
+      },
+      "description": "Same value as id in the body; constant across retries."
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/WebhookEvent"
+       },
+       "example": {
+        "id": "wh_7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+        "event": "payment_session.label_ready",
+        "created_at": "2026-10-12T15:31:12.000Z",
+        "session_id": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33",
+        "data": {
+         "session_id": "as_3f9c1b2e-7d64-4a8e-9c0f-5b2d1e8a7c33",
+         "status": "label_ready",
+         "created_at": "2026-10-12T15:04:05.000Z",
+         "expires_at": "2026-11-11T15:04:05.000Z",
+         "amount": 38.42,
+         "currency": "USD",
+         "service": "USPS Ground Advantage",
+         "quote_reused": true,
+         "cancelled_at": null,
+         "checkout": {
+          "order_id": "c1d2e3f4-5a6b-4c7d-8e9f-0a1b2c3d4e5f",
+          "started_at": "2026-10-12T15:09:41.000Z",
+          "paid": true,
+          "label_ready": true,
+          "refunded": false,
+          "carrier": "USPS",
+          "service": "Ground Advantage",
+          "tracking_number": "9400100000000000000000",
+          "tracking_status": "in_transit",
+          "estimated_delivery": "2026-10-16",
+          "delivered_at": null
+         },
+         "next": "Label bought. Pass tracking_number to track_parcel for scan events."
+        }
+       }
+      }
+     }
+    },
+    "responses": {
+     "2XX": {
+      "description": "Acknowledged: the delivery is marked done and not sent again."
+     },
+     "default": {
+      "description": "Any other status, a redirect, a timeout (8 seconds) or a connection error: the delivery is retried on the ladder above, then given up after the seventh attempt."
      }
     }
    }
@@ -773,8 +1205,14 @@
    },
    "CheckoutSessionRequest": {
     "type": "object",
-    "description": "The shipment to open a checkout for: a quote_id from a previous quote, or the shipment itself.",
+    "description": "The shipment to open a checkout for: a quote_id from a previous quote, or the shipment itself. Optionally your own external_id, which makes the call a create-or-update.",
     "properties": {
+     "external_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,100}$",
+      "description": "Your own key for this session, such as an order or cart id. With it the call is a create-or-update: it creates the session if none exists for this external_id, and re-prices that session in place if one does. Needs a bearer token from /oauth/token, because the OAuth client is what scopes the key: without one the call answers 401 token_required. Without external_id every call creates a new session, token or not. Retries are idempotent: the same external_id never creates a duplicate session, it updates the one stored under it, or answers 409 once the human has started its checkout.",
+      "example": "cart-10442"
+     },
      "quote_id": {
       "type": "string",
       "description": "The quote_id a getParcelQuote answer carries (the get_parcel_quote tool returns the same handle), valid 15 minutes. When given, the shipment comes from that quote and product, from_zip, to_zip, to_country and quantity are ignored; an expired handle prices the fields live."
@@ -815,6 +1253,25 @@
      "service": {
       "type": "string",
       "description": "Optional service to anchor the amount, matched as a case-insensitive fragment of the display name; cheapest when omitted or unmatched."
+     },
+     "callback_url": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "uri",
+      "maxLength": 500,
+      "description": "Optional webhook. An https URL SMKlog POSTs a WebhookEvent to each time the session reaches a new stage (checkout_started, paid, label_ready, delivered, refunded, cancelled), signed with callback_secret; see the webhooks section. Must name a public host: IP addresses, private names and smklog.com hosts answer 400 invalid_request. On an update by external_id, omit it to keep the stored webhook and send null to remove it. Deliveries are retried up to 7 times over about 18 hours until the endpoint answers 2xx."
+     },
+     "callback_secret": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._~+/=-]{16,128}$",
+      "description": "Optional HMAC key for the X-Smklog-Signature header, 16 to 128 characters. Omit it with a callback_url and SMKlog generates one and returns it once, in callback_secret of this answer; store it, it is never shown again."
+     },
+     "dry_run": {
+      "type": "boolean",
+      "default": false,
+      "description": "True prices the shipment and validates everything exactly as the real call would, and stores nothing: the answer carries dry_run true, session_id and handoff_url null, and created says which branch the real call would take. A dry run spends a carrier call unless quote_id is given, and draws on the same hourly allowance."
      }
     }
    },
@@ -843,6 +1300,14 @@
       "pattern": "^as_[A-Za-z0-9-]{8,80}$",
       "description": "Handle for getCheckoutStatus, shaped as_ plus a UUID, good for 30 days. Null only when the session record could not be stored."
      },
+     "created": {
+      "type": "boolean",
+      "description": "Which branch ran: true when this call created the session, false when it updated the session already stored under your external_id. Always true without external_id. Absent only when session_id is null, because then nothing was stored."
+     },
+     "external_id": {
+      "type": "string",
+      "description": "The external_id you sent, echoed back; absent when you sent none."
+     },
      "method": {
       "type": "array",
       "items": {
@@ -866,9 +1331,25 @@
       "description": "The service the amount is anchored to"
      },
      "handoff_url": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "uri",
+      "description": "Opens the SMKlog checkout prefilled with this shipment; null on a dry run"
+     },
+     "dry_run": {
+      "type": "boolean",
+      "description": "True when the call was a dry run: priced and validated, nothing stored, session_id and handoff_url null."
+     },
+     "callback_url": {
       "type": "string",
       "format": "uri",
-      "description": "Opens the SMKlog checkout prefilled with this shipment"
+      "description": "The webhook URL stored on the session; absent when none is stored."
+     },
+     "callback_secret": {
+      "type": "string",
+      "description": "Present only in the answer that generated it (callback_url sent without callback_secret): the HMAC key the X-Smklog-Signature header is computed with. Shown once."
      },
      "identified_product_title": {
       "type": "string",
@@ -904,9 +1385,10 @@
        "paid",
        "label_ready",
        "delivered",
-       "refunded"
+       "refunded",
+       "cancelled"
       ],
-      "description": "Stage, in that order"
+      "description": "Stage, in that order; cancelled when cancelPaymentSession ended the session before the human opened checkout"
      },
      "created_at": {
       "type": "string",
@@ -1006,9 +1488,59 @@
        }
       }
      },
+     "cancelled_at": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "format": "date-time",
+      "description": "When cancelPaymentSession cancelled the session; null otherwise"
+     },
      "next": {
       "type": "string",
       "description": "What, if anything, the agent should do now"
+     }
+    }
+   },
+   "WebhookEvent": {
+    "type": "object",
+    "description": "What SMKlog POSTs to a session's callback_url each time the session reaches a new stage. The body carries the current CheckoutStatus under data, so a consumer needs no second call.",
+    "required": [
+     "id",
+     "event",
+     "created_at",
+     "session_id",
+     "data"
+    ],
+    "properties": {
+     "id": {
+      "type": "string",
+      "pattern": "^wh_[A-Za-z0-9-]{8,80}$",
+      "description": "Delivery id, also sent as X-Smklog-Delivery. The same id on every retry of one event, so consumers can deduplicate."
+     },
+     "event": {
+      "type": "string",
+      "enum": [
+       "payment_session.checkout_started",
+       "payment_session.paid",
+       "payment_session.label_ready",
+       "payment_session.delivered",
+       "payment_session.refunded",
+       "payment_session.cancelled"
+      ],
+      "description": "The stage reached, also sent as X-Smklog-Event"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the stage was observed"
+     },
+     "session_id": {
+      "type": "string",
+      "description": "The session the event belongs to"
+     },
+     "data": {
+      "$ref": "#/components/schemas/CheckoutStatus"
      }
     }
    },
@@ -1062,7 +1594,7 @@
     "properties": {
      "error": {
       "type": "string",
-      "description": "Stable code: invalid_json, invalid_request, missing_required_fields, product_not_recognized, product_url_not_detected, session_failed, session_not_found, rate_limited, invalid_token"
+      "description": "Stable code: invalid_json, invalid_request, missing_required_fields, product_not_recognized, product_url_not_detected, session_failed, session_in_checkout, session_not_found, rate_limited, invalid_token, token_required"
      },
      "message": {
       "type": "string",
@@ -1074,14 +1606,64 @@
        "type": "string"
       },
       "description": "Field names still needed, with missing_required_fields and product_not_recognized"
+     },
+     "session_id": {
+      "type": "string",
+      "description": "With session_in_checkout: the session stored under your external_id, whose checkout the human has started"
+     },
+     "external_id": {
+      "type": "string",
+      "description": "With session_in_checkout: the external_id you sent"
      }
     }
+   }
+  },
+  "headers": {
+   "RateLimit-Limit": {
+    "description": "Requests this client may make in the current one-hour window of the bucket the operation draws on (IETF draft-ietf-httpapi-ratelimit-headers).",
+    "schema": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "example": 80
+   },
+   "RateLimit-Remaining": {
+    "description": "Requests left in the current window after this one; 0 means the next call answers 429 until RateLimit-Reset elapses.",
+    "schema": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "example": 79
+   },
+   "RateLimit-Reset": {
+    "description": "Seconds until the window turns and the full allowance returns.",
+    "schema": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "example": 1740
+   },
+   "RateLimit-Policy": {
+    "description": "The policy in force as \"<limit>;w=<window seconds>\": the allowance and the hour it is measured over.",
+    "schema": {
+     "type": "string",
+     "pattern": "^[0-9]+;w=3600$"
+    },
+    "example": "80;w=3600"
+   },
+   "Retry-After": {
+    "description": "On 429 only: seconds to wait before the window turns (RFC 9110 section 10.2.3). Equal to RateLimit-Reset.",
+    "schema": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "example": 1740
    }
   },
   "securitySchemes": {
    "clientCredentials": {
     "type": "oauth2",
-    "description": "Optional. Every operation works without a token. A client that wants its own hourly rate-limit bucket holds OAuth 2.0 client_credentials issued by hand (registration instructions at https://smklog.com/auth.md) and sends the opaque bearer it gets from /oauth/token. Discovery: /.well-known/oauth-authorization-server.",
+    "description": "Optional. Every operation works without a token. A client that wants its own hourly rate-limit bucket, or the external_id create-or-update on createPaymentSession, holds OAuth 2.0 client_credentials issued by hand (registration instructions at https://smklog.com/auth.md) and sends the opaque bearer it gets from /oauth/token. Discovery: /.well-known/oauth-authorization-server.",
     "flows": {
      "clientCredentials": {
       "tokenUrl": "https://quote-api.smklog.com/oauth/token",
