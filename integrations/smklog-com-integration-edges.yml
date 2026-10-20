@@ -61,13 +61,14 @@ edges:
   relationship: compatible
   shape: a2a
   evidence_kind: own-wellknown
-  degree: conformant
+  degree: flavored
   report_only: true
   a2a_card:
-    grade: conformant
+    grade: flavored
     verdict: live
     protocol_version: '1.0'
-    deviations: []
+    deviations:
+    - no-protocolVersion
     card_subject: unknown
   contract_reference:
     register: provider's own /.well-known/agent-card.json
