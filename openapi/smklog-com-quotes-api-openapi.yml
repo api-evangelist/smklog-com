@@ -3,7 +3,7 @@ info:
   title: SMKlog Quote Quotes API
   version: 1.4.0
   summary: Live parcel rates from a US origin, a checkout handed to a human, and where that checkout stands.
-  description: 'Live parcel rates from USPS, UPS, FedEx and DHL Express for a single shipment sent from a US origin: inside the US, or to Canada, the UK, Germany or Australia.'
+  description: 'Live parcel rates from USPS, UPS, FedEx and DHL Express for a single shipment sent from a US origin: inside the US, or to Canada, the UK, Germany or Australia. Describe the item in plain words and the packed box size and weight are estimated server-side; supply exact dimensions and weight to skip the estimate. No account and no key. Rate limited per client (about 80 quote requests per hour); quotes cost real money to produce, so cache on your side and do not poll. Buying a label happens on smklog.com — this API prices, it does not sell.'
   termsOfService: https://smklog.com/terms
   contact:
     name: SMKlog
@@ -26,6 +26,14 @@ paths:
       operationId: getParcelQuote
       tags:
       - Quotes
+      x-agentic-access:
+        action-class: connected
+        consequence: read
+        subject: optional
+        audience: https://quote-api.smklog.com
+        token:
+          max-ttl: 3600
+        audit: none
       summary: Price one parcel from a US origin across USPS, UPS and FedEx (plus DHL Express…
       description: 'Prices one shipment live against the carriers for the lane. Name the item in plain words and the packed box is estimated server-side (the estimate, its confidence and its assumptions come back in package); send length_cm, width_cm, height_cm, weight_kg and package_source "manual" to price an exact box instead. Up to five purchasable services come back, each a checkout total with the SMKlog fee inside and the carrier counter price beside it. One call per shipment: every call spends a live carrier rating.'
       requestBody:
@@ -57,6 +65,15 @@ paths:
       responses:
         '200':
           description: Priced (mode parcel_label_ready, up to 5 rates), not a parcel (mode not_a_parcel, empty rates — SMKlog does not arrange pallet or freight shipments), more than one box (mode multiple_boxes, empty rates — quote each box on its own), or restricted (empty rates with an explanation).
+          headers:
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimit-Limit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimit-Remaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimit-Reset'
+            RateLimit-Policy:
+              $ref: '#/components/headers/RateLimit-Policy'
           content:
             application/json:
               schema:
@@ -143,7 +160,7 @@ paths:
                 missing:
                 - product
         '429':
-          description: rate_limited. Slow down; the same buckets cover /quote and /mcp (about 80 quote requests an hour per client).
+          description: rate_limited. Slow down; the same buckets cover /quote and /mcp (about 80 quote requests an hour per client). RateLimit-Reset and Retry-After say how many seconds until the hourly window turns.
           content:
             application/json:
               schema:
@@ -151,74 +168,19 @@ paths:
               example:
                 error: rate_limited
                 message: Too many Smart Quote API requests from this client. Try again later.
+          headers:
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimit-Limit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimit-Remaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimit-Reset'
+            RateLimit-Policy:
+              $ref: '#/components/headers/RateLimit-Policy'
+            Retry-After:
+              $ref: '#/components/headers/Retry-After'
 components:
   schemas:
-    Problem:
-      type: object
-      description: 'Every error answer on this host: a stable machine-readable code in error, a sentence for the human in message, and the missing field names when the code is missing_required_fields.'
-      required:
-      - error
-      properties:
-        error:
-          type: string
-          description: 'Stable code: invalid_json, invalid_request, missing_required_fields, product_not_recognized, product_url_not_detected, session_failed, session_not_found, rate_limited, invalid_token'
-        message:
-          type: string
-          description: What went wrong, in a sentence
-        missing:
-          type: array
-          items:
-            type: string
-          description: Field names still needed, with missing_required_fields and product_not_recognized
-    Rate:
-      type: object
-      description: 'One purchasable service. Two prices are returned and they are not interchangeable: amount is the checkout total a customer pays, with the SMKlog fee inside it (the fee is itemized only on the checkout receipt), and retail_amount is the carrier’s own counter price for the same parcel where the carrier publishes one (0 where it does not).'
-      required:
-      - carrier
-      - service
-      - amount
-      - currency
-      properties:
-        carrier:
-          type: string
-          enum:
-          - USPS
-          - UPS
-          - FedEx
-          - DHL
-          description: USPS, UPS, FedEx or DHL
-        service:
-          type: string
-          description: Service display name, e.g. Ground Advantage
-        service_code:
-          type: string
-          description: Carrier service code, stable across calls
-        amount:
-          type: number
-          description: Checkout total, USD, SMKlog fee inside
-        retail_amount:
-          type: number
-          description: Carrier retail counter price, USD; 0 when not published
-        delivery_days:
-          type:
-          - integer
-          - 'null'
-          description: Transit days the carrier quoted, null when it quoted none
-        delivery_window:
-          type:
-          - string
-          - 'null'
-          description: e.g. "2-5 business days"; null when the carrier quoted none
-        delivery_estimated_date:
-          type:
-          - string
-          - 'null'
-          description: ISO date the carrier estimates, null when it gives none
-        currency:
-          type: string
-          enum:
-          - USD
-          description: Always USD
     QuoteRequest:
       type: object
       description: One shipment to price. Name the item in plain words (the packed box is estimated) or send the four packed measurements and skip the estimate.
@@ -393,10 +355,113 @@ components:
           items:
             type: string
           description: What the estimate took for granted, for the human to correct before paying
+    Rate:
+      type: object
+      description: 'One purchasable service. Two prices are returned and they are not interchangeable: amount is the checkout total a customer pays, with the SMKlog fee inside it (the fee is itemized only on the checkout receipt), and retail_amount is the carrier’s own counter price for the same parcel where the carrier publishes one (0 where it does not).'
+      required:
+      - carrier
+      - service
+      - amount
+      - currency
+      properties:
+        carrier:
+          type: string
+          enum:
+          - USPS
+          - UPS
+          - FedEx
+          - DHL
+          description: USPS, UPS, FedEx or DHL
+        service:
+          type: string
+          description: Service display name, e.g. Ground Advantage
+        service_code:
+          type: string
+          description: Carrier service code, stable across calls
+        amount:
+          type: number
+          description: Checkout total, USD, SMKlog fee inside
+        retail_amount:
+          type: number
+          description: Carrier retail counter price, USD; 0 when not published
+        delivery_days:
+          type:
+          - integer
+          - 'null'
+          description: Transit days the carrier quoted, null when it quoted none
+        delivery_window:
+          type:
+          - string
+          - 'null'
+          description: e.g. "2-5 business days"; null when the carrier quoted none
+        delivery_estimated_date:
+          type:
+          - string
+          - 'null'
+          description: ISO date the carrier estimates, null when it gives none
+        currency:
+          type: string
+          enum:
+          - USD
+          description: Always USD
+    Problem:
+      type: object
+      description: 'Every error answer on this host: a stable machine-readable code in error, a sentence for the human in message, and the missing field names when the code is missing_required_fields.'
+      required:
+      - error
+      properties:
+        error:
+          type: string
+          description: 'Stable code: invalid_json, invalid_request, missing_required_fields, product_not_recognized, product_url_not_detected, session_failed, session_in_checkout, session_not_found, rate_limited, invalid_token, token_required'
+        message:
+          type: string
+          description: What went wrong, in a sentence
+        missing:
+          type: array
+          items:
+            type: string
+          description: Field names still needed, with missing_required_fields and product_not_recognized
+        session_id:
+          type: string
+          description: 'With session_in_checkout: the session stored under your external_id, whose checkout the human has started'
+        external_id:
+          type: string
+          description: 'With session_in_checkout: the external_id you sent'
+  headers:
+    RateLimit-Limit:
+      description: Requests this client may make in the current one-hour window of the bucket the operation draws on (IETF draft-ietf-httpapi-ratelimit-headers).
+      schema:
+        type: integer
+        minimum: 1
+      example: 80
+    RateLimit-Remaining:
+      description: Requests left in the current window after this one; 0 means the next call answers 429 until RateLimit-Reset elapses.
+      schema:
+        type: integer
+        minimum: 0
+      example: 79
+    RateLimit-Policy:
+      description: 'The policy in force as "<limit>;w=<window seconds>": the allowance and the hour it is measured over.'
+      schema:
+        type: string
+        pattern: ^[0-9]+;w=3600$
+      example: 80;w=3600
+    RateLimit-Reset:
+      description: Seconds until the window turns and the full allowance returns.
+      schema:
+        type: integer
+        minimum: 1
+      example: 1740
+    Retry-After:
+      description: 'On 429 only: seconds to wait before the window turns (RFC 9110 section 10.2.3). Equal to RateLimit-Reset.'
+      schema:
+        type: integer
+        minimum: 1
+      example: 1740
   securitySchemes:
     clientCredentials:
       type: oauth2
-      description: 'Optional. Every operation works without a token. A client that wants its own hourly rate-limit bucket holds OAuth 2.0 client_credentials issued by hand (registration instructions at https://smklog.com/auth.md) and sends the opaque bearer it gets from /oauth/token. Discovery: /.well-known/oauth-authorization-server.'
+      description: 'Optional. Every operation works without a token. A client that wants its own hourly rate-limit bucket, or the external_id create-or-update on createPaymentSession, holds OAuth 2.0 client_credentials issued by hand (registration instructions at https://smklog.com/auth.md) and sends the opaque bearer it gets from /oauth/token. Discovery: /.well-known/oauth-authorization-server.'
       flows:
         clientCredentials:
           tokenUrl: https://quote-api.smklog.com/oauth/token
@@ -409,7 +474,7 @@ x-provenance:
   method: published
   publisher: SMKlog (SMKLOG-2022 LLC)
   source: https://quote-api.smklog.com/openapi.json
-  published: '2026-10-12'
+  published: '2026-10-19'
 x-mcp:
   transport: streamable-http
   endpoint: https://quote-api.smklog.com/mcp

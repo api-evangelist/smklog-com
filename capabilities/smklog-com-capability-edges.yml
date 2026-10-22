@@ -13,12 +13,16 @@ capability_model:
   notice: NOTICE
 edge_count: 1
 edges:
-- tag: Quote
-  spec_file: smklog-com-quote-api-openapi.yml
+- tag: Quotes
+  spec_file: smklog-com-quotes-api-openapi.yml
   capability_id: BC-520.50
   capability_id_l1: BC-520
   capability_name: Logistics Operations Management
-  confidence: 0.7
-  evidence: POST /quote  getParcelQuote  Price one parcel from a US origin across USPS, UPS and FedEx
-  reason: Returns live multi-carrier parcel shipping rates for a shipment, i.e. transport rate shopping
-    within logistics operations. Narrow single-operation surface, hence moderate confidence.
+  confidence: 0.72
+  evidence: POST /quote getParcelQuote — 'Price one parcel from a US origin across USPS, UPS and FedEx
+    (plus DHL Express…)'; schemas QuoteRequest, QuoteResponse, Package, Rate
+  reason: 'The operation performs multi-carrier parcel rate shopping for a shipment (carrier rating/transport
+    pricing), which is a transportation-management function within Logistics Operations Management. It
+    is not sales CPQ (BC-410.40): the vendor is not quoting its own product configuration but returning
+    carrier transport rates. Confidence moderated because the surface is a single rating endpoint and
+    could also be read as a pricing-lookup utility.'
