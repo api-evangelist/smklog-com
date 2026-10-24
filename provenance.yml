@@ -9,12 +9,18 @@ artifacts:
   a2a/smklog-com-agent-card.json:
     method: unknown
     evidence: no authorship recorded
+  agentic-access/smklog-com-agentic-access.yml:
+    method: unknown
+    evidence: no authorship recorded
   authentication/smklog-com-auth.md:
     method: unknown
     evidence: no authorship recorded
   authentication/smklog-com-authentication.yml:
     method: searched
     evidence: declared in the artifact
+  capabilities/smklog-com-capability-edges.yml:
+    method: unknown
+    evidence: no authorship recorded
   changelog/smklog-com-changelog.yml:
     method: unknown
     evidence: no authorship recorded
@@ -30,10 +36,73 @@ artifacts:
   errors/smklog-com-problem-types.yml:
     method: derived
     evidence: declared in the artifact
+  examples/smklog-com-cancel-payment-session-responses-example.json:
+    method: unknown
+    evidence: no authorship recorded
+  examples/smklog-com-create-payment-session-request-example.json:
+    method: unknown
+    evidence: no authorship recorded
+  examples/smklog-com-create-payment-session-responses-example.json:
+    method: unknown
+    evidence: no authorship recorded
+  examples/smklog-com-get-checkout-status-responses-example.json:
+    method: unknown
+    evidence: no authorship recorded
+  examples/smklog-com-get-parcel-quote-request-example.json:
+    method: unknown
+    evidence: no authorship recorded
+  examples/smklog-com-get-parcel-quote-responses-example.json:
+    method: unknown
+    evidence: no authorship recorded
+  examples/smklog-com-status-responses-example.json:
+    method: unknown
+    evidence: no authorship recorded
+  finops/smklog-com-finops.yml:
+    method: unknown
+    evidence: no authorship recorded
   front-door-ai/2026-09-17.yml:
     method: unknown
     evidence: no authorship recorded
-  kin/checks-2026-09-24T161608.yml:
+  integrations/_index.yml:
+    method: generated
+    evidence: carries an API Evangelist house phrase
+  integrations/smklog-com-integration-edges.yml:
+    method: searched
+    evidence: declared in the artifact
+  json-ld/smklog-com-context.jsonld:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-checkout-session-request-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-checkout-session-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-checkout-status-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-liveness-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-package-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-problem-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-quote-request-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-quote-response-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-rate-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  json-schema/smklog-com-webhook-event-schema.json:
+    method: unknown
+    evidence: no authorship recorded
+  kin/checks-2026-10-11T110117.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
   kin/score-2026-09-19T193153.yml:
@@ -66,6 +135,21 @@ artifacts:
   kin/score-2026-09-24T161608.yml:
     method: generated
     evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-09-25T210408.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-09-25T232841.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-03T000835.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-03T024842.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
+  kin/score-2026-10-11T110117.yml:
+    method: generated
+    evidence: Kin Score snapshot written by score.rb
   lifecycle/smklog-com-lifecycle.yml:
     method: searched
     evidence: declared in the artifact
@@ -87,28 +171,45 @@ artifacts:
   mcp/smklog-com-tools-list.json:
     method: unknown
     evidence: no authorship recorded
+  openapi/_original/smklog-com-openapi.yml:
+    method: harvested
+    evidence: fetched from https://quote-api.smklog.com/openapi.json (sha256 6beefffe47cb, fetched 2026-10-19)
   openapi/_original/smklog-com-quote-api-openapi.json:
     method: harvested
-    evidence: found in openapi/_original/; the fetch URL and bytes were not recorded, so byte-identity
-      to the provider's source is unverified
-  openapi/smklog-com-openapi.yml:
+    evidence: fetched from https://quote-api.smklog.com/openapi.json (sha256 6beefffe47cb, fetched 2026-10-19)
+  openapi/smklog-com-checkout-api-openapi.yml:
     method: derived
     evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/smklog-com-operations-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  openapi/smklog-com-quotes-api-openapi.yml:
+    method: derived
+    evidence: paths are a subset of openapi/_original/ (split from the harvested spec)
+  overlays/smklog-com-agent-crosswalk-overlay.yaml:
+    method: unknown
+    evidence: no authorship recorded
   overlays/smklog-com-quote-api-overlay.yaml:
-    method: generated
-    evidence: declared in the artifact
+    method: derived
+    evidence: an API Evangelist overlay (title) over the provider's contract
   packages/smklog-com-packages.yml:
     method: searched
     evidence: declared in the artifact
   plans/smklog-com-plans-pricing.yml:
     method: searched
     evidence: declared in the artifact
+  postman/smklog-com-quote-api.postman_collection.json:
+    method: unknown
+    evidence: no authorship recorded
   rate-limits/smklog-com-rate-limits.yml:
     method: searched
     evidence: declared in the artifact
   regulatory/smklog-com-regulatory-posture.yml:
     method: searched
     evidence: declared in the artifact
+  rules/smklog-com-spectral-rules.yml:
+    method: unknown
+    evidence: no authorship recorded
   scopes/smklog-com-scopes.yml:
     method: searched
     evidence: declared in the artifact
@@ -125,6 +226,9 @@ artifacts:
     method: unknown
     evidence: no authorship recorded
   skills/smklog-com-get-parcel-quote.md:
+    method: unknown
+    evidence: no authorship recorded
+  vocabulary/smklog-com-vocabulary.yaml:
     method: unknown
     evidence: no authorship recorded
   well-known/smklog-com-agent-skills-index.json:
